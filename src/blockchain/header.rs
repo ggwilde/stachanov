@@ -31,7 +31,7 @@ use blockchain::traits::Hashable;
 pub struct BlockHeader{
     issuer_pubkey: [u8; 32],
     prev_block_hash: [u8; 32],
-    body_type: u64,
+    version: u64,
     index: u64,
     timestamp: u64,
     content_hash: [u8; 32], 
@@ -58,14 +58,14 @@ impl BlockHeader{
     /// * `issuer_pubkey`: The public key of the issuer node
     /// * `previous_header`: Either None, if this is the first
     ///                      header in the chain or Some(BlockHeader)
-    /// * `body_type`: Some constant to denote the transaction type in the
-    ///                body (e.g. 'commodity transaction', 'key signature')
+    /// * `version`: A version number, that signifies which rules apply
+    ///              to the block
     /// * `content_hash`: The merkle tree root hash of all transactions
     ///                   in the appropriate BlockBody
 
     pub fn create(issuer_pubkey: [u8; 32],
                   previous_header: Option<BlockHeader>,
-                  body_type: u64,
+                  version: u64,
                   content_hash: [u8; 32]) -> BlockHeader {
 
         let mut index = 0;
@@ -80,7 +80,7 @@ impl BlockHeader{
         BlockHeader {
             issuer_pubkey: issuer_pubkey,
             prev_block_hash: prev_block_hash,
-            body_type: body_type,
+            version: version,
             index: index,
             timestamp: 0, // TODO
             content_hash: content_hash,
@@ -116,15 +116,15 @@ impl BlockHeader{
 
         // --
 
-        let mut body_type_u8le = [0; 8];
+        let mut version_u8le = [0; 8];
 
         let mut i = 0;
         for byte in bytes[64..72].to_vec(){
-            body_type_u8le[i] = byte;
+            version_u8le[i] = byte;
             i = i + 1;
         }
 
-        let body_type = u8le_to_u64(body_type_u8le);
+        let version = u8le_to_u64(version_u8le);
 
         // --
 
@@ -183,7 +183,7 @@ impl BlockHeader{
         BlockHeader {
             issuer_pubkey: issuer_pubkey,
             prev_block_hash: prev_block_hash,
-            body_type: body_type,
+            version: version,
             index: index,
             timestamp: timestamp,
             content_hash: content_hash,
@@ -212,11 +212,11 @@ impl BlockHeader{
 
         let index_u8le = u64_to_u8le(self.index);
         let timestamp_u8le = u64_to_u8le(self.timestamp);
-        let body_type_u8le = u64_to_u8le(self.body_type);
+        let version_u8le = u64_to_u8le(self.version);
 
         let message = [&self.issuer_pubkey[..],
                        &self.prev_block_hash[..],
-                       &body_type_u8le[..],
+                       &version_u8le[..],
                        &index_u8le[..],
                        &timestamp_u8le[..],
                        &self.content_hash[..],
@@ -353,7 +353,7 @@ fn test_to_bytes_from_bytes(){
              0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37,
              0x38, 0x39, 0x3a, 0x3b, 0x3c, 0x3d, 0x3e, 0x3f],
 
-        body_type: u8le_to_u64([0x40, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47]),
+        version: u8le_to_u64([0x40, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47]),
         index: u8le_to_u64([0x48, 0x49, 0x4a, 0x4b, 0x4c, 0x4d, 0x4e, 0x4f]),
         timestamp: u8le_to_u64([0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57]),
 
@@ -386,7 +386,7 @@ fn test_to_bytes_from_bytes(){
 
     assert!(block_header.issuer_pubkey == rebuild.issuer_pubkey);
     assert!(block_header.prev_block_hash == rebuild.prev_block_hash);
-    assert!(block_header.body_type == rebuild.body_type);
+    assert!(block_header.version == rebuild.version);
     assert!(block_header.index == rebuild.index);
     assert!(block_header.timestamp == rebuild.timestamp);
     assert!(block_header.content_hash == rebuild.content_hash);
