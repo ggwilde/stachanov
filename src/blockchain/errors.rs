@@ -18,10 +18,24 @@
 //    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-pub mod header;
-pub mod body;
-pub mod traits;
-pub mod block;
-pub mod errors;
-pub mod transactions;
-mod utils;
+use std::error::Error;
+use std::fmt;
+
+#[derive(Debug)]
+
+/// IdCollisionErrors happen when a new block is added, that
+/// has the same sha3 hash as an already registered block
+
+pub struct IdCollisionError;
+
+impl Error for IdCollisionError{
+    fn description(&self) -> &str{
+        "BlockId collision found. Block rejected."
+    }
+}
+
+impl fmt::Display for IdCollisionError{
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "BlockId collision found. Block rejected.")
+    }
+}

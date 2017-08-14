@@ -18,7 +18,51 @@
 //    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+use blockchain::block::Block;
+use blockchain::block::BlockId;
+use blockchain::errors::IdCollisionError;
+
 pub trait Hashable {
     fn to_sha3_hash(&self) -> [u8; 32];
 }
 
+/// The ChainCache trait must be implemented by all cache backends.
+/// We allow for different backends (redis, postgres, etc) as not
+/// every cache type fits for every service built around the core.
+
+pub trait ChainCache{
+
+    /// Fetches a block identified by its unique block id
+    /// * `block_id`: The block identifier (equivalent to the
+    ///               the sha3 hash of the block header)
+
+    fn get_block(&self, block_id: BlockId) -> Block;
+
+    /// Fetches the block *after* the supplied block id. This
+    /// is mainly an interface for block iteration.
+    /// * `block_id`: The block identifier (equivalent to the
+    ///               the sha3 hash of the block header)
+
+    fn get_after(&self, block_id: BlockId) -> Block;
+
+    /// Fetches the block that has a timestamp greater or
+    /// equal to the specified timestamp.
+    /// * `timestamp`: A unix timestamp
+
+    // NOTE: This is a difference to the bitcoin timestamp
+    // implementation. In stachanov a block header must have a
+    // timestamp greater than the timestamp of its predecessor
+
+    fn get_after_timestamp(&self, timestamp: u64) -> Block;
+
+    /// Fetches the last block in the whole chain
+
+    fn get_tail_block(&self) -> Block;
+
+    /// Append a block to the chain *without* checking its
+    /// validity. Will return an IdCollisionError if there
+    /// already is a block with the same block id.
+    /// * `block`: The verified block
+
+    fn append_verified_block(&self, block: Block) -> Result<(), IdCollisionError>;
+}

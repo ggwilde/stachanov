@@ -18,10 +18,19 @@
 //    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-pub mod header;
-pub mod body;
-pub mod traits;
-pub mod block;
-pub mod errors;
-pub mod transactions;
-mod utils;
+use blockchain::traits::Hashable;
+
+// NOTE: This module currently only consists of
+// a dummy implementation
+
+pub enum Transaction{
+    Dummy
+}
+
+impl Hashable for Transaction{
+
+    fn to_sha3_hash(&self) -> [u8; 32]{
+        [0; 32]
+    }
+
+}
