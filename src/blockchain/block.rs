@@ -21,6 +21,8 @@
 use blockchain::header::BlockHeader;
 use blockchain::body::BlockBody;
 use blockchain::transactions::Transaction;
+use blockchain::errors::VerificationError;
+use blockchain::errors::VerificationErrorReason::InvalidContentHash;
 
 /// BlockId is equivalent to the sha3 hash of the block header
 
@@ -31,4 +33,24 @@ pub struct Block{
     body: BlockBody<Transaction>
 }
 
+impl Block{
 
+    /// Verifies the internal consistency of the block.
+    /// This includes:
+    /// * Verification of issuer signature
+    /// * Verification of proof of work
+    /// * Verification of merkle hash tree
+
+    fn verify_internal(&self) -> Result<(), VerificationError> {
+
+        self.header.verify_internal()?;
+
+        if self.header.content_hash != self.body.merkle_root_hash(){
+            let err = VerificationError::new(InvalidContentHash);
+            return Err(err)
+        }
+        Ok(())
+
+    }
+
+}

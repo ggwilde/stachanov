@@ -42,7 +42,7 @@ fn main(){
     let mut block = BlockHeader::create(public_key, None, 0xDEADBEEF, [4; 32]);
 
     let mut n = 0;
-    while !block.has_valid_pow() {
+    while !block.verify_pow().is_ok() {
         n = n + 1;
         print!("{}: ", n);
         block.randomize_nonce();
@@ -71,6 +71,6 @@ fn main(){
 
     println!("");
     block.sign(&secret_key);
-    assert!(block.has_valid_signature());
+    assert!(block.verify_internal().is_ok());
 
 }

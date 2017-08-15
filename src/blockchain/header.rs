@@ -27,6 +27,9 @@ use blockchain::utils::u64_to_u8le;
 use blockchain::utils::u8le_to_u64;
 use blockchain::utils::sha3_256;
 use blockchain::traits::Hashable;
+use blockchain::errors::VerificationError;
+use blockchain::errors::VerificationErrorReason::InvalidProofOfWork;
+use blockchain::errors::VerificationErrorReason::InvalidIssuerSignature;
 
 pub struct BlockHeader{
     issuer_pubkey: [u8; 32],
@@ -34,7 +37,7 @@ pub struct BlockHeader{
     version: u64,
     index: u64,
     timestamp: u64,
-    content_hash: [u8; 32], 
+    pub content_hash: [u8; 32],
     pub nonce: [u8; 32],
     signature: [u8; 64]
 }
@@ -233,35 +236,46 @@ impl BlockHeader{
         rand_gen.fill_bytes(& mut self.nonce);
     }
 
-    /// Returns true if the proof of work is valid
-    /// (this is done by checking if the zero
-    /// prefix is long enough)
+    /// Verifies the internal structure of the header
+    /// This includes:
+    /// * Verification of issuer signature
+    /// * Verification of proof of work
 
-    pub fn has_valid_pow(&self) -> bool{
+    pub fn verify_internal(&self) -> Result<(), VerificationError>{
+        self.verify_signature()?;
+        self.verify_pow()?;
+        Ok(())
+    }
+
+    /// Verifies the issuer signature
+
+    pub fn verify_signature(&self) -> Result<(), VerificationError>{
+
+        let message = self.message_as_bytes();
+        let issuer_verified = ed25519::verify(&message, &self.issuer_pubkey, &self.signature);
+
+        if !issuer_verified{
+            let err = VerificationError::new(InvalidIssuerSignature);
+            return Err(err)
+        }
+        Ok(())
+
+    }
+
+    /// Verifies the proof of work
+
+    pub fn verify_pow(&self) -> Result<(), VerificationError>{
 
         let blockhash = self.to_sha3_hash();
 
-        // currently constant PoW
+        // currently constant difficulty
 
-        blockhash[0] == 0 && blockhash[1] == 0
-        
-    }
+        if !(blockhash[0] == 0 && blockhash[1] == 0){
+            let err = VerificationError::new(InvalidProofOfWork);
+            return Err(err)
+        }
+        Ok(())
 
-    /// Returns true if BlockHeader signature
-    /// is valid, false otherwise
-
-    pub fn has_valid_signature(&self) -> bool{
-
-        let message = self.message_as_bytes();
-        ed25519::verify(&message, &self.issuer_pubkey, &self.signature)
-
-    }
-
-    /// Returns true if the BlockHeader is valid
-    /// (= signature and proof of work are valid)
-
-    pub fn is_valid(&self) -> bool{
-        self.has_valid_signature() && self.has_valid_pow()
     }
 
     /// Signs the BlockHeader
@@ -297,10 +311,10 @@ fn test_blockheader_signature_validity(){
     // check for signature validity
 
     block.sign(&secret_key);
-    assert!(block.has_valid_signature(), "Block was correctly signed, but sig check failed");
+    assert!(block.verify_signature().is_ok(), "Block was correctly signed, but sig check failed");
 
     block.sign(&[0;64]);
-    assert!(!block.has_valid_signature(), "Block was incorrectly signed, but sig check passed");
+    assert!(block.verify_signature().is_err(), "Block was incorrectly signed, but sig check passed");
 
 }
 
@@ -324,13 +338,13 @@ fn test_blockheader_pow_validity(){
                    0xDA, 0x43, 0xDA, 0xF2, 0x74, 0xC8, 0x79, 0x2C,
                    0xD5, 0x5C, 0x46, 0x93, 0xCE, 0x39, 0x88, 0x17];
 
-    assert!(block.has_valid_pow(), "Valid proof-of-work was not accepted");
+    assert!(block.verify_pow().is_ok(), "Valid proof-of-work was not accepted");
 
     // check incorrect nonce
 
     block.nonce = [0; 32];
 
-    assert!(!block.has_valid_pow(), "Invalid proof-of-work was accepted");
+    assert!(block.verify_pow().is_err(), "Invalid proof-of-work was accepted");
 
 }
 

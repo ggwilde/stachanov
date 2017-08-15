@@ -31,7 +31,7 @@ impl<T: Hashable> BlockBody<T>{
     /// (The root hash is saved in the block head to guarantee
     /// data integrity)
 
-    fn merkle_root_hash(&self) -> [u8; 32]{
+    pub fn merkle_root_hash(&self) -> [u8; 32]{
         
         // compute leaves
 
