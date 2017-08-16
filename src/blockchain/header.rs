@@ -32,9 +32,9 @@ use blockchain::errors::VerificationErrorReason::InvalidProofOfWork;
 use blockchain::errors::VerificationErrorReason::InvalidIssuerSignature;
 
 pub struct BlockHeader{
+    version: u64,
     issuer_pubkey: [u8; 32],
     prev_block_hash: [u8; 32],
-    version: u64,
     index: u64,
     timestamp: u64,
     pub content_hash: [u8; 32],
@@ -81,9 +81,9 @@ impl BlockHeader{
         }
 
         BlockHeader {
+            version: version,
             issuer_pubkey: issuer_pubkey,
             prev_block_hash: prev_block_hash,
-            version: version,
             index: index,
             timestamp: 0, // TODO
             content_hash: content_hash,
@@ -99,10 +99,23 @@ impl BlockHeader{
 
     pub fn from_bytes(bytes: Vec<u8>) -> BlockHeader{
 
+
+        let mut version_u8le = [0; 8];
+
+        let mut i = 0;
+        for byte in bytes[0..8].to_vec(){
+            version_u8le[i] = byte;
+            i = i + 1;
+        }
+
+        let version = u8le_to_u64(version_u8le);
+
+        // --
+
         let mut issuer_pubkey = [0; 32];
 
         let mut i = 0;
-        for byte in bytes[0..32].to_vec(){
+        for byte in bytes[8..40].to_vec(){
             issuer_pubkey[i] = byte;
             i = i + 1;
         }
@@ -112,22 +125,10 @@ impl BlockHeader{
         let mut prev_block_hash = [0; 32];
 
         let mut i = 0;
-        for byte in bytes[32..64].to_vec(){
+        for byte in bytes[40..72].to_vec(){
             prev_block_hash[i] = byte;
             i = i + 1;
         }
-
-        // --
-
-        let mut version_u8le = [0; 8];
-
-        let mut i = 0;
-        for byte in bytes[64..72].to_vec(){
-            version_u8le[i] = byte;
-            i = i + 1;
-        }
-
-        let version = u8le_to_u64(version_u8le);
 
         // --
 
@@ -184,9 +185,9 @@ impl BlockHeader{
         }
 
         BlockHeader {
+            version: version,
             issuer_pubkey: issuer_pubkey,
             prev_block_hash: prev_block_hash,
-            version: version,
             index: index,
             timestamp: timestamp,
             content_hash: content_hash,
@@ -213,13 +214,13 @@ impl BlockHeader{
 
     fn message_as_bytes(&self) -> Vec<u8>{
 
+        let version_u8le = u64_to_u8le(self.version);
         let index_u8le = u64_to_u8le(self.index);
         let timestamp_u8le = u64_to_u8le(self.timestamp);
-        let version_u8le = u64_to_u8le(self.version);
 
-        let message = [&self.issuer_pubkey[..],
+        let message = [&version_u8le[..],
+                       &self.issuer_pubkey[..],
                        &self.prev_block_hash[..],
-                       &version_u8le[..],
                        &index_u8le[..],
                        &timestamp_u8le[..],
                        &self.content_hash[..],
@@ -322,10 +323,10 @@ fn test_blockheader_signature_validity(){
 #[test]
 fn test_blockheader_pow_validity(){
 
-    let public_key = [0xEE, 0xF9, 0x2A, 0x8F, 0xF3, 0xD0, 0x95, 0x1F,
-                      0xE3, 0x49, 0x74, 0xDE, 0xA3, 0x03, 0xC6, 0x17,
-                      0xCE, 0xA8, 0x8C, 0xF0, 0x70, 0x8F, 0x1D, 0xA3,
-                      0x87, 0x04, 0x7A, 0x62, 0x04, 0xE9, 0x23, 0xF2];
+    let public_key = [0xF6, 0x78, 0x27, 0x40, 0xFE, 0xAC, 0xCB, 0x89,
+                      0x2E, 0x7E, 0x17, 0xEC, 0x3E, 0x4F, 0x3C, 0xF4,
+                      0x49, 0x90, 0x58, 0x66, 0x15, 0xC5, 0x3C, 0x54,
+                      0xC7, 0x8C, 0x5A, 0x43, 0x7B, 0x54, 0x5F, 0x3D];
 
     // create block header
 
@@ -333,10 +334,10 @@ fn test_blockheader_pow_validity(){
 
     // check correct nonce (produces a hash with 16 leading zeroes)
 
-    block.nonce = [0x4F, 0x43, 0x7B, 0x7F, 0x74, 0xB7, 0x6E, 0xCC,
-                   0xEF, 0x06, 0xB7, 0xBA, 0xE4, 0x0A, 0x31, 0x12,
-                   0xDA, 0x43, 0xDA, 0xF2, 0x74, 0xC8, 0x79, 0x2C,
-                   0xD5, 0x5C, 0x46, 0x93, 0xCE, 0x39, 0x88, 0x17];
+    block.nonce = [0xE7, 0xA5, 0xE5, 0x29, 0x60, 0x6C, 0xB3, 0x26,
+                   0xFA, 0x7A, 0x03, 0x69, 0xE9, 0x28, 0x68, 0x11,
+                   0x29, 0xFA, 0xF3, 0xD9, 0xCE, 0xFD, 0x41, 0x35,
+                   0x15, 0x8B, 0x79, 0x01, 0x4B, 0x7B, 0x77, 0xCE];
 
     assert!(block.verify_pow().is_ok(), "Valid proof-of-work was not accepted");
 
@@ -355,6 +356,8 @@ fn test_to_bytes_from_bytes(){
 
     let block_header = BlockHeader {
 
+        version: u8le_to_u64([0x40, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47]),
+
         issuer_pubkey:
             [0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
              0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
@@ -367,7 +370,6 @@ fn test_to_bytes_from_bytes(){
              0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37,
              0x38, 0x39, 0x3a, 0x3b, 0x3c, 0x3d, 0x3e, 0x3f],
 
-        version: u8le_to_u64([0x40, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47]),
         index: u8le_to_u64([0x48, 0x49, 0x4a, 0x4b, 0x4c, 0x4d, 0x4e, 0x4f]),
         timestamp: u8le_to_u64([0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57]),
 
