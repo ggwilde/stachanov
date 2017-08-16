@@ -35,6 +35,36 @@ pub struct Block{
 
 impl Block{
 
+    /// Creates a new Block
+    ///
+    /// * `issuer_pubkey`: The public key of the issuer node
+    /// * `previous_block`: Either None, if this is the first
+    ///                     header in the chain or Some(Block)
+    /// * `transactions`: A vec of transactions in the block
+
+    fn new(issuer_pubkey: [u8; 32],
+           previous_block: Option<Block>,
+           transactions: Vec<Transaction>) -> Block{
+
+        let body = BlockBody::new(transactions);
+        let content_hash = body.merkle_root_hash();
+
+        let previous_header = match previous_block{
+            Some(block) => Some(block.header),
+            None => None
+        };
+
+        let version = 0;
+
+        let header = BlockHeader::new(issuer_pubkey,
+                                      previous_header,
+                                      version,
+                                      content_hash);
+
+        Block{header: header, body: body}
+
+    }
+
     /// Verifies the internal consistency of the block.
     /// This includes:
     /// * Verification of issuer signature

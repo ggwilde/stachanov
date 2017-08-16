@@ -27,6 +27,14 @@ pub struct BlockBody<T>{
 
 impl<T: Hashable> BlockBody<T>{
     
+    /// Creates a new BlockBody
+    ///
+    /// * `transactions`: A vec of transactions in the block body
+
+    pub fn new(transactions: Vec<T>) -> BlockBody<T>{
+        BlockBody{transactions: transactions}
+    }
+
     /// Returns the merkle root hash over all transactions.
     /// (The root hash is saved in the block head to guarantee
     /// data integrity)

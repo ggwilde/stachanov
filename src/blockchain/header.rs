@@ -66,10 +66,10 @@ impl BlockHeader{
     /// * `content_hash`: The merkle tree root hash of all transactions
     ///                   in the appropriate BlockBody
 
-    pub fn create(issuer_pubkey: [u8; 32],
-                  previous_header: Option<BlockHeader>,
-                  version: u64,
-                  content_hash: [u8; 32]) -> BlockHeader {
+    pub fn new(issuer_pubkey: [u8; 32],
+               previous_header: Option<BlockHeader>,
+               version: u64,
+               content_hash: [u8; 32]) -> BlockHeader {
 
         let mut index = 0;
         let mut prev_block_hash = [0;32];
@@ -307,7 +307,7 @@ fn test_blockheader_signature_validity(){
 
     // create block header
 
-    let mut block = BlockHeader::create(public_key, None, 0xDEADBEEF, [4; 32]);
+    let mut block = BlockHeader::new(public_key, None, 0xDEADBEEF, [4; 32]);
 
     // check for signature validity
 
@@ -330,7 +330,7 @@ fn test_blockheader_pow_validity(){
 
     // create block header
 
-    let mut block = BlockHeader::create(public_key, None, 0xDEADBEEF, [4; 32]);
+    let mut block = BlockHeader::new(public_key, None, 0xDEADBEEF, [4; 32]);
 
     // check correct nonce (produces a hash with 16 leading zeroes)
 
