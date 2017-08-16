@@ -83,4 +83,20 @@ impl Block{
 
     }
 
+    /// Sets a nonce to the block header
+    /// * `nonce`: 32 bytes of u8 integers
+
+    pub fn set_nonce(&mut self, nonce: [u8; 32]){
+        self.header.set_nonce(nonce);
+    }
+
+    /// Signs the Block
+    ///
+    /// * `secret_key`: The ed25519 secret key
+    ///                 (non-detached as 64 byte array)
+
+    pub fn sign(&mut self, secret_key: &[u8]){
+        self.header.sign(secret_key);
+    }
+
 }
