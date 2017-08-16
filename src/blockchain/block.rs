@@ -42,9 +42,9 @@ impl Block{
     ///                     header in the chain or Some(Block)
     /// * `transactions`: A vec of transactions in the block
 
-    fn new(issuer_pubkey: [u8; 32],
-           previous_block: Option<Block>,
-           transactions: Vec<Transaction>) -> Block{
+    pub fn new(issuer_pubkey: [u8; 32],
+               previous_block: Option<Block>,
+               transactions: Vec<Transaction>) -> Block{
 
         let body = BlockBody::new(transactions);
         let content_hash = body.merkle_root_hash();
