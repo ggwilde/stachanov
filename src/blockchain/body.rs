@@ -22,7 +22,7 @@ use blockchain::utils::sha3_256;
 use blockchain::traits::Hashable;
 
 pub struct BlockBody<T>{
-    transactions: Vec<T>
+    pub transactions: Vec<T>
 }
 
 impl<T: Hashable> BlockBody<T>{
