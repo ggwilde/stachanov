@@ -46,7 +46,8 @@ impl fmt::Display for IdCollisionError{
 pub enum VerificationErrorReason{
     InvalidProofOfWork,
     InvalidIssuerSignature,
-    InvalidContentHash
+    InvalidContentHash,
+    InvalidChainLink
 }
 
 impl fmt::Display for VerificationErrorReason {
@@ -54,7 +55,8 @@ impl fmt::Display for VerificationErrorReason {
         match *self {
             VerificationErrorReason::InvalidProofOfWork => write!(f, "Proof of work was not valid"),
             VerificationErrorReason::InvalidIssuerSignature => write!(f, "Block header signature doesn't match issuer"),
-            VerificationErrorReason::InvalidContentHash => write!(f, "Block header content hash doesn't match transaction merkle tree root")
+            VerificationErrorReason::InvalidContentHash => write!(f, "Block header content hash doesn't match transaction merkle tree root"),
+            VerificationErrorReason::InvalidChainLink => write!(f, "Chain link is invalid (prev_block_hash, timestamp or index incorrect)")
         }
     }
 }

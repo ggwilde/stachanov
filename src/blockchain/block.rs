@@ -83,6 +83,17 @@ impl Block{
 
     }
 
+    /// Verifies that this block is the successor
+    /// of the supplied block
+    /// * `prev_block`: The preceding block
+
+    pub fn verify_chain_link(&self, prev_block: &Block) -> Result<(), VerificationError> {
+
+        self.header.verify_chain_link(&prev_block.header)?;
+        Ok(())
+
+    }
+
     /// Sets a nonce to the block header
     /// * `nonce`: 32 bytes of u8 integers
 

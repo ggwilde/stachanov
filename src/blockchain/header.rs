@@ -30,6 +30,7 @@ use blockchain::traits::Hashable;
 use blockchain::errors::VerificationError;
 use blockchain::errors::VerificationErrorReason::InvalidProofOfWork;
 use blockchain::errors::VerificationErrorReason::InvalidIssuerSignature;
+use blockchain::errors::VerificationErrorReason::InvalidChainLink;
 
 pub struct BlockHeader{
     version: u64,
@@ -280,6 +281,23 @@ impl BlockHeader{
 
         if !(blockhash[0] == 0 && blockhash[1] == 0){
             let err = VerificationError::new(InvalidProofOfWork);
+            return Err(err)
+        }
+        Ok(())
+
+    }
+
+    /// Verifies that this block header is the successor
+    /// of the supplied block header
+    /// * `prev_header`: The preceding block header
+
+    pub fn verify_chain_link(&self, prev_header: &BlockHeader) -> Result<(), VerificationError> {
+
+        if (self.prev_block_hash != prev_header.to_sha3_hash() ||
+            self.timestamp <= prev_header.timestamp ||
+            self.index != prev_header.index + 1)
+        {
+            let err = VerificationError::new(InvalidChainLink);
             return Err(err)
         }
         Ok(())
