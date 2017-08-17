@@ -70,7 +70,7 @@ impl BlockHeader{
     ///                   in the appropriate BlockBody
 
     pub fn new(issuer_pubkey: [u8; 32],
-               previous_header: Option<BlockHeader>,
+               previous_header: Option<&BlockHeader>,
                timestamp: u64,
                version: u64,
                content_hash: [u8; 32]) -> BlockHeader {
