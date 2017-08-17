@@ -185,3 +185,30 @@ fn test_verify_internal(){
                                                classified as valid");
 
 }
+
+#[test]
+fn test_chain_link_validation(){
+
+    let public_key = [0xE3, 0x70, 0x07, 0x9D, 0x71, 0xD0, 0x59, 0x6F,
+                      0xE6, 0x48, 0x71, 0x85, 0x2A, 0x8E, 0xF0, 0x0C,
+                      0x75, 0xDD, 0x13, 0x79, 0xFD, 0x87, 0xCF, 0xBB,
+                      0x5B, 0xB7, 0x72, 0xBE, 0x90, 0xC6, 0x1E, 0xD3];
+
+    // create two subsequent blocks
+
+    let first_block = Block::new(public_key, None, 0, vec![Transaction::Dummy]);
+    let second_block = Block::new(public_key, Some(&first_block), 1, vec![Transaction::Dummy]);
+
+    assert!(second_block.verify_chain_link(&first_block).is_ok(), "Correctly linked blocks classified as invalid");
+    assert!(first_block.verify_chain_link(&second_block).is_err(), "Incorrectly linked blocks classified as valid");
+
+    // create two subsequent blocks where the second
+    // bock has a timestamp <= the timestamp of the
+    // preceding one
+
+    let first_block = Block::new(public_key, None, 0, vec![Transaction::Dummy]);
+    let second_block = Block::new(public_key, Some(&first_block), 0, vec![Transaction::Dummy]);
+
+    assert!(second_block.verify_chain_link(&first_block).is_err(), "Incorrectly timestamped block pair classified as valid");
+
+}
