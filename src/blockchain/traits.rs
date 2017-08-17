@@ -36,14 +36,14 @@ pub trait ChainCache{
     /// * `block_id`: The block identifier (equivalent to the
     ///               the sha3 hash of the block header)
 
-    fn get_block(&self, block_id: BlockId) -> Block;
+    fn get_block(&self, block_id: BlockId) -> Option<Block>;
 
     /// Fetches the block *after* the supplied block id. This
     /// is mainly an interface for block iteration.
     /// * `block_id`: The block identifier (equivalent to the
     ///               the sha3 hash of the block header)
 
-    fn get_after(&self, block_id: BlockId) -> Block;
+    fn get_after(&self, block_id: BlockId) -> Option<Block>;
 
     /// Fetches the block that has a timestamp greater or
     /// equal to the specified timestamp.
@@ -53,11 +53,11 @@ pub trait ChainCache{
     // implementation. In stachanov a block header must have a
     // timestamp greater than the timestamp of its predecessor
 
-    fn get_after_timestamp(&self, timestamp: u64) -> Block;
+    fn get_after_timestamp(&self, timestamp: u64) -> Option<Block>;
 
     /// Fetches the last block in the whole chain
 
-    fn get_tail_block(&self) -> Block;
+    fn get_tail_block(&self) -> Option<Block>;
 
     /// Append a block to the chain *without* checking its
     /// validity. Will return an IdCollisionError if there
