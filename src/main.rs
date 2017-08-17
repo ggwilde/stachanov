@@ -39,7 +39,7 @@ fn main(){
     let secret_key = secpub_tuple.0;
     let public_key = secpub_tuple.1;
 
-    let mut block = BlockHeader::new(public_key, None, 0xDEADBEEF, [4; 32]);
+    let mut block = BlockHeader::new(public_key, None, 0, 0xDEADBEEF, [4; 32]);
 
     let mut n = 0;
     while !block.verify_pow().is_ok() {

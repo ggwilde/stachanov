@@ -40,10 +40,13 @@ impl Block{
     /// * `issuer_pubkey`: The public key of the issuer node
     /// * `previous_block`: Either None, if this is the first
     ///                     header in the chain or Some(Block)
+    /// * `timestamp`: u64 unix timetamp denoting the mining
+    ///                start point
     /// * `transactions`: A vec of transactions in the block
 
     pub fn new(issuer_pubkey: [u8; 32],
                previous_block: Option<Block>,
+               timestamp: u64,
                transactions: Vec<Transaction>) -> Block{
 
         let body = BlockBody::new(transactions);
@@ -58,6 +61,7 @@ impl Block{
 
         let header = BlockHeader::new(issuer_pubkey,
                                       previous_header,
+                                      timestamp,
                                       version,
                                       content_hash);
 
@@ -136,7 +140,7 @@ fn test_verify_internal(){
     // an all zero hash, which means the merkle tree root will be
     // sha3_256(0....0 + 0x80...0)
 
-    let mut block = Block::new(public_key, None, vec![Transaction::Dummy]);
+    let mut block = Block::new(public_key, None, 0, vec![Transaction::Dummy]);
 
     let nonce = [0x2C, 0x0E, 0x2F, 0x75, 0xD0, 0x7C, 0xB7, 0x80,
                  0x3A, 0x4A, 0xC2, 0xB8, 0xF5, 0xB6, 0x10, 0x21,
@@ -155,7 +159,7 @@ fn test_verify_internal(){
     // signature, but without a correct content_hash
 
     let wrong_content_hash = [4; 32];
-    let mut block_header = BlockHeader::new(public_key, None, 0, wrong_content_hash);
+    let mut block_header = BlockHeader::new(public_key, None, 0, 0, wrong_content_hash);
 
     let body = BlockBody{transactions: vec![Transaction::Dummy]};
     let mut block = Block{header: block_header, body: body};

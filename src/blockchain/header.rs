@@ -62,6 +62,8 @@ impl BlockHeader{
     /// * `issuer_pubkey`: The public key of the issuer node
     /// * `previous_header`: Either None, if this is the first
     ///                      header in the chain or Some(BlockHeader)
+    /// * `timestamp`: u64 unix timetamp denoting the mining
+    ///                start point
     /// * `version`: A version number, that signifies which rules apply
     ///              to the block
     /// * `content_hash`: The merkle tree root hash of all transactions
@@ -69,6 +71,7 @@ impl BlockHeader{
 
     pub fn new(issuer_pubkey: [u8; 32],
                previous_header: Option<BlockHeader>,
+               timestamp: u64,
                version: u64,
                content_hash: [u8; 32]) -> BlockHeader {
 
@@ -86,7 +89,7 @@ impl BlockHeader{
             issuer_pubkey: issuer_pubkey,
             prev_block_hash: prev_block_hash,
             index: index,
-            timestamp: 0, // TODO
+            timestamp: timestamp,
             content_hash: content_hash,
             nonce: [0; 32],
             signature: [0; 64]
@@ -332,7 +335,7 @@ fn test_blockheader_signature_validity(){
 
     // create block header
 
-    let mut block = BlockHeader::new(public_key, None, 0xDEADBEEF, [4; 32]);
+    let mut block = BlockHeader::new(public_key, None, 0, 0xDEADBEEF, [4; 32]);
 
     // check for signature validity
 
@@ -355,7 +358,7 @@ fn test_blockheader_pow_validity(){
 
     // create block header
 
-    let mut block = BlockHeader::new(public_key, None, 0, [4; 32]);
+    let mut block = BlockHeader::new(public_key, None, 0, 0, [4; 32]);
 
     // check correct nonce (produces a hash with 16 leading zeroes)
 
