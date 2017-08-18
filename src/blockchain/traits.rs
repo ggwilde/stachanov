@@ -29,11 +29,11 @@ pub trait Hashable {
     fn to_sha3_hash(&self) -> [u8; 32];
 }
 
-/// The ChainCache trait must be implemented by all cache backends.
+/// The ChainStorage trait must be implemented by all storage backends.
 /// We allow for different backends (redis, postgres, etc) as not
-/// every cache type fits for every service built around the core.
+/// every storage type fits for every service built around the core.
 
-pub trait ChainCache{
+pub trait ChainStorage{
 
     /// Fetches a block identified by its unique block id
     /// * `block_id`: The block identifier (equivalent to the
