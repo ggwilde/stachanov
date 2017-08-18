@@ -21,6 +21,9 @@
 use blockchain::block::Block;
 use blockchain::block::BlockId;
 use blockchain::errors::IdCollisionError;
+use blockchain::transactions::TxId;
+use blockchain::transactions::TxLinkMap;
+use blockchain::transactions::Transaction;
 
 pub trait Hashable {
     fn to_sha3_hash(&self) -> [u8; 32];
@@ -65,4 +68,21 @@ pub trait ChainCache{
     /// * `block`: The verified block
 
     fn append_verified_block(&self, block: Block) -> Result<(), IdCollisionError>;
+
+    /// Fetches a transaction identifier by its id
+    /// * `tx_id`: the transaction id
+
+    fn get_transaction(&self, tx_id: TxId) -> Option<Transaction>;
+
+    /// Fetches the link map of a transaction
+    /// * `tx_id`: the transaction id
+
+    fn get_linkmap(&self, tx_id: TxId) -> Option<TxLinkMap>;
+
+    /// Updates the TxLinkMap of a transaction
+    /// * `tx_id`: the transaction id
+    /// * `map`: the appropriate link map
+
+    fn set_linkmap(&self, tx_id: TxId, map: TxLinkMap);
+
 }
