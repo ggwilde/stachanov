@@ -28,6 +28,9 @@ use blockchain::traits::Hashable;
 
 /// BlockId is equivalent to the sha3 hash of the block header
 
+#[derive(Eq)]
+#[derive(Hash)]
+#[derive(PartialEq)]
 #[derive(Clone)]
 #[derive(Copy)]
 pub struct BlockId([u8; 32]);

@@ -47,6 +47,9 @@ impl Hashable for Transaction{
 // a u32, so systems with smaller memory are not
 // overburdend.
 
+#[derive(Eq)]
+#[derive(PartialEq)]
+#[derive(Hash)]
 #[derive(Clone)]
 pub struct TxIndex(pub u16);
 
@@ -55,6 +58,9 @@ pub struct TxIndex(pub u16);
 /// in the chain and a u16 index pointing to a position
 /// in the list of transactions in that block.
 
+#[derive(Eq)]
+#[derive(PartialEq)]
+#[derive(Hash)]
 #[derive(Clone)]
 pub struct TxId{
     pub block_id: BlockId,
@@ -67,6 +73,8 @@ pub struct TxId{
 /// coupons can be redeemed in a relation to a dispatcher
 /// collective, etc
 
+#[derive(Eq)]
+#[derive(PartialEq)]
 #[derive(Hash)]
 #[derive(Clone)]
 pub enum TxRel{
