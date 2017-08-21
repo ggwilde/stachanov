@@ -21,11 +21,13 @@
 use blockchain::utils::sha3_256;
 use blockchain::traits::Hashable;
 
-pub struct BlockBody<T>{
+#[derive(Clone)]
+pub struct BlockBody<T: Clone>{
     pub transactions: Vec<T>
 }
 
-impl<T: Hashable> BlockBody<T>{
+
+impl<T: Hashable + Clone> BlockBody<T>{
     
     /// Creates a new BlockBody
     ///

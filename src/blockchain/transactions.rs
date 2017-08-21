@@ -25,6 +25,7 @@ use blockchain::block::BlockId;
 // NOTE: This module currently only consists of
 // a dummy implementation
 
+#[derive(Clone)]
 pub enum Transaction{
     Dummy
 }
@@ -48,6 +49,7 @@ impl Hashable for Transaction{
 // a u32, so systems with smaller memory are not
 // overburdend.
 
+#[derive(Clone)]
 pub struct TxId{
     block_id: BlockId,
     tx_index: u16,
@@ -60,6 +62,7 @@ pub struct TxId{
 /// collective, etc
 
 #[derive(Hash)]
+#[derive(Clone)]
 pub enum TxRel{
     Dummy
 }
@@ -80,6 +83,7 @@ pub enum TxRel{
 ///         verification mechanism to check if possible
 ///         quotas are exceeded.
 
+#[derive(Clone)]
 enum TxLinkState{
     Unlinked,
     SingleLinked(TxId),
@@ -103,6 +107,7 @@ enum TxLinkState{
 ///         transaction and can not link to a future target
 ///         transaction anymore.
 
+#[derive(Clone)]
 enum TxLinkMapState{
     Linkable,
     Unlinkable,
@@ -114,6 +119,7 @@ enum TxLinkMapState{
 /// TxLinkStates and holds a TxLinkMapState to denote the general
 /// link state of the transaction.
 
+#[derive(Clone)]
 pub struct TxLinkMap{
     state: TxLinkMapState,
     links: HashMap<TxRel, TxLinkState>

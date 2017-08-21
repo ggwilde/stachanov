@@ -32,6 +32,7 @@ use blockchain::errors::VerificationErrorReason::InvalidProofOfWork;
 use blockchain::errors::VerificationErrorReason::InvalidIssuerSignature;
 use blockchain::errors::VerificationErrorReason::InvalidChainLink;
 
+#[derive(Copy)]
 pub struct BlockHeader{
     version: u64,
     issuer_pubkey: [u8; 32],
@@ -43,6 +44,15 @@ pub struct BlockHeader{
     signature: [u8; 64]
 }
 
+// since [u8; 64] doesn't implement the Clone
+// trait and implementing Clone for [u8; 64]
+// in here violates rust's policy, we derive
+// the header struct from Copy and utilize it
+// to implement Clone for the whole header.
+
+impl Clone for BlockHeader{
+    fn clone(&self) -> BlockHeader { *self }
+}
 
 impl Hashable for BlockHeader {
 

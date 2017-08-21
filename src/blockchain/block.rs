@@ -26,8 +26,11 @@ use blockchain::errors::VerificationErrorReason::InvalidContentHash;
 
 /// BlockId is equivalent to the sha3 hash of the block header
 
+#[derive(Clone)]
+#[derive(Copy)]
 pub struct BlockId([u8; 32]);
 
+#[derive(Clone)]
 pub struct Block{
     header: BlockHeader,
     body: BlockBody<Transaction>
