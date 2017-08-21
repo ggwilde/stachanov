@@ -21,8 +21,10 @@
 use blockchain::header::BlockHeader;
 use blockchain::body::BlockBody;
 use blockchain::transactions::Transaction;
+use blockchain::transactions::TxIndex;
 use blockchain::errors::VerificationError;
 use blockchain::errors::VerificationErrorReason::InvalidContentHash;
+use blockchain::traits::Hashable;
 
 /// BlockId is equivalent to the sha3 hash of the block header
 
@@ -70,6 +72,34 @@ impl Block{
 
         Block{header: header, body: body}
 
+    }
+
+    /// Gets the unique hash identifier
+    /// of this block
+
+    pub fn get_id(&self) -> BlockId{
+        let header_hash = self.header.to_sha3_hash();
+        BlockId(header_hash)
+    }
+
+    /// Gets the index of the block
+
+    pub fn get_index(&self) -> u64{
+        self.header.get_index()
+    }
+
+    /// Gets the timestamp of the block
+
+    pub fn get_timestamp(&self) -> u64{
+        self.header.get_timestamp()
+    }
+
+    /// Gets a single transaction from the block.
+    /// * `index`: The TxIndex of the transaction
+
+    pub fn get_transaction(&self, tx_index: TxIndex) -> Option<Transaction> {
+        let TxIndex(index) = tx_index;
+        self.body.get_transaction(index as usize)
     }
 
     /// Verifies the internal consistency of the block.

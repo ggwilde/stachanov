@@ -107,6 +107,18 @@ impl BlockHeader{
 
     }
 
+    /// Gets the index of the header
+
+    pub fn get_index(&self) -> u64{
+        self.index
+    }
+
+    /// Gets the timestamp of the header
+
+    pub fn get_timestamp(&self) -> u64{
+        self.timestamp
+    }
+
     /// Creates a new BlockHeader from a byte vector.
     ///
     /// * `bytes`: A byte vector

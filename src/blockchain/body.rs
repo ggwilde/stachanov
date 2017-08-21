@@ -37,6 +37,18 @@ impl<T: Hashable + Clone> BlockBody<T>{
         BlockBody{transactions: transactions}
     }
 
+    /// Gets a single transaction from the body.
+    /// Returns None, if no such index exists
+    /// * `index`: The index of the transaction
+
+    pub fn get_transaction(&self, index: usize) -> Option<T> {
+        if index >= self.transactions.len(){
+            return None
+        }
+        let transaction = self.transactions[index].clone();
+        Some(transaction)
+    }
+
     /// Returns the merkle root hash over all transactions.
     /// (The root hash is saved in the block head to guarantee
     /// data integrity)
