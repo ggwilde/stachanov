@@ -67,7 +67,7 @@ pub trait ChainStorage{
     /// already is a block with the same block id.
     /// * `block`: The verified block
 
-    fn append_verified_block(&self, block: Block) -> Result<(), IdCollisionError>;
+    fn append_verified_block(&mut self, block: Block) -> Result<(), IdCollisionError>;
 
     /// Fetches a transaction identifier by its id
     /// * `tx_id`: the transaction id
@@ -83,6 +83,6 @@ pub trait ChainStorage{
     /// * `tx_id`: the transaction id
     /// * `map`: the appropriate link map
 
-    fn set_linkmap(&self, tx_id: TxId, map: TxLinkMap);
+    fn set_linkmap(&mut self, tx_id: TxId, map: TxLinkMap);
 
 }
