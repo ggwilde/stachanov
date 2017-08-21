@@ -38,10 +38,8 @@ impl Hashable for Transaction{
 
 }
 
-/// TxId denotes a registered transaction in the chain.
-/// It is composed of the BlockId pointing to a block
-/// in the chain and a u16 index pointing to a position
-/// in the list of transactions in that block.
+/// TxIndex typewraps an u16 int. It denotes the index
+/// in the transaction vector of a single block
 
 // NOTE: since we can address only 2**16 transactions,
 // the maximum number of transactions per block is
@@ -50,9 +48,17 @@ impl Hashable for Transaction{
 // overburdend.
 
 #[derive(Clone)]
+pub struct TxIndex(pub u16);
+
+/// TxId denotes a registered transaction in the chain.
+/// It is composed of the BlockId pointing to a block
+/// in the chain and a u16 index pointing to a position
+/// in the list of transactions in that block.
+
+#[derive(Clone)]
 pub struct TxId{
-    block_id: BlockId,
-    tx_index: u16,
+    pub block_id: BlockId,
+    pub tx_index: TxIndex,
 }
 
 /// TxRel denotes the relationship between two transactions.
