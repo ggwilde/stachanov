@@ -26,7 +26,7 @@ use blockchain::errors::VerificationError;
 use blockchain::errors::VerificationErrorReason::InvalidContentHash;
 use blockchain::traits::Hashable;
 
-/// BlockId is equivalent to the sha3 hash of the block header
+/// `BlockId` is equivalent to the sha3 hash of the block header
 
 #[derive(Eq)]
 #[derive(Hash)]

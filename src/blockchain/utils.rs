@@ -39,7 +39,7 @@ pub fn u8le_to_u64(input: [u8; 8]) -> u64{
 
     while i < 8{
         output += (input[i] as u64) << (8*i);
-        i = i + 1;
+        i += 1;
     }
     output
 

@@ -29,7 +29,7 @@ pub trait Hashable {
     fn to_sha3_hash(&self) -> [u8; 32];
 }
 
-/// The ChainStorage trait must be implemented by all storage backends.
+/// The `ChainStorage` trait must be implemented by all storage backends.
 /// We allow for different backends (redis, postgres, etc) as not
 /// every storage type fits for every service built around the core.
 

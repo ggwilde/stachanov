@@ -21,7 +21,7 @@
 use std::error::Error;
 use std::fmt;
 
-/// IdCollisionErrors happen when a new block is added, that
+/// `IdCollisionErrors` happen when a new block is added, that
 /// has the same sha3 hash as an already registered block
 
 #[derive(Debug)]
@@ -39,7 +39,7 @@ impl fmt::Display for IdCollisionError{
     }
 }
 
-/// VerificationErrorReason is an enum used to denote the type
+/// `VerificationErrorReason` is an enum used to denote the type
 /// of verification error
 
 #[derive(Debug)]
@@ -61,7 +61,7 @@ impl fmt::Display for VerificationErrorReason {
     }
 }
 
-/// VerificationErrors happen when a block could not be verified
+/// `VerificationError`s happen when a block could not be verified
 
 #[derive(Debug)]
 pub struct VerificationError{

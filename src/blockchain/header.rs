@@ -88,10 +88,9 @@ impl BlockHeader{
         let mut index = 0;
         let mut prev_block_hash = [0;32];
 
-        match previous_header {
-            Some(block) => { index = block.index + 1;
-                             prev_block_hash = block.to_sha3_hash(); }
-            None => {}
+        if let Some(header) = previous_header {
+            index = header.index + 1;
+            prev_block_hash = header.to_sha3_hash();
         }
 
         BlockHeader {
@@ -131,7 +130,7 @@ impl BlockHeader{
         let mut i = 0;
         for byte in bytes[0..8].to_vec(){
             version_u8le[i] = byte;
-            i = i + 1;
+            i += 1;
         }
 
         let version = u8le_to_u64(version_u8le);
@@ -143,7 +142,7 @@ impl BlockHeader{
         let mut i = 0;
         for byte in bytes[8..40].to_vec(){
             issuer_pubkey[i] = byte;
-            i = i + 1;
+            i += 1;
         }
 
         // --
@@ -153,7 +152,7 @@ impl BlockHeader{
         let mut i = 0;
         for byte in bytes[40..72].to_vec(){
             prev_block_hash[i] = byte;
-            i = i + 1;
+            i += 1;
         }
 
         // --
@@ -163,7 +162,7 @@ impl BlockHeader{
         let mut i = 0;
         for byte in bytes[72..80].to_vec(){
             index_u8le[i] = byte;
-            i = i + 1;
+            i += 1;
         }
 
         let index = u8le_to_u64(index_u8le);
@@ -175,7 +174,7 @@ impl BlockHeader{
         let mut i = 0;
         for byte in bytes[80..88].to_vec(){
             timestamp_u8le[i] = byte;
-            i = i + 1;
+            i += 1;
         }
 
         let timestamp = u8le_to_u64(timestamp_u8le);
@@ -187,7 +186,7 @@ impl BlockHeader{
         let mut i = 0;
         for byte in bytes[88..120].to_vec(){
             content_hash[i] = byte;
-            i = i + 1;
+            i += 1;
         }
 
         // --
@@ -197,7 +196,7 @@ impl BlockHeader{
         let mut i = 0;
         for byte in bytes[120..152].to_vec(){
             nonce[i] = byte;
-            i = i + 1;
+            i += 1;
         }
 
         // --
@@ -207,7 +206,7 @@ impl BlockHeader{
         let mut i = 0;
         for byte in bytes[152..216].to_vec(){
             signature[i] = byte;
-            i = i + 1;
+            i += 1;
         }
 
         BlockHeader {
@@ -229,8 +228,7 @@ impl BlockHeader{
     pub fn as_bytes(&self) -> Vec<u8>{
 
         let bin_message = self.message_as_bytes();
-        let as_vec = [&bin_message[..], &self.signature[..]].concat();
-        as_vec
+        [&bin_message[..], &self.signature[..]].concat()
 
     }
 
@@ -244,15 +242,13 @@ impl BlockHeader{
         let index_u8le = u64_to_u8le(self.index);
         let timestamp_u8le = u64_to_u8le(self.timestamp);
 
-        let message = [&version_u8le[..],
-                       &self.issuer_pubkey[..],
-                       &self.prev_block_hash[..],
-                       &index_u8le[..],
-                       &timestamp_u8le[..],
-                       &self.content_hash[..],
-                       &self.nonce[..]].concat();
-
-        message
+        [&version_u8le[..],
+         &self.issuer_pubkey[..],
+         &self.prev_block_hash[..],
+         &index_u8le[..],
+         &timestamp_u8le[..],
+         &self.content_hash[..],
+         &self.nonce[..]].concat()
 
     }
 

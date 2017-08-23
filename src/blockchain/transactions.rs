@@ -38,7 +38,7 @@ impl Hashable for Transaction{
 
 }
 
-/// TxIndex typewraps an u16 int. It denotes the index
+/// `TxIndex` typewraps an u16 int. It denotes the index
 /// in the transaction vector of a single block
 
 // NOTE: since we can address only 2**16 transactions,
@@ -53,8 +53,8 @@ impl Hashable for Transaction{
 #[derive(Clone)]
 pub struct TxIndex(pub u16);
 
-/// TxId denotes a registered transaction in the chain.
-/// It is composed of the BlockId pointing to a block
+/// `TxId` denotes a registered transaction in the chain.
+/// It is composed of the `BlockId` pointing to a block
 /// in the chain and a u16 index pointing to a position
 /// in the list of transactions in that block.
 
@@ -67,7 +67,7 @@ pub struct TxId{
     pub tx_index: TxIndex,
 }
 
-/// TxRel denotes the relationship between two transactions.
+/// `TxRel` denotes the relationship between two transactions.
 /// Transactions can relate in various ways to each other.
 /// For example workloads can be transformed into coupons,
 /// coupons can be redeemed in a relation to a dispatcher
@@ -81,7 +81,7 @@ pub enum TxRel{
     Dummy
 }
 
-/// TxLinkState denotes the state of a (possible) link
+/// `TxLinkState` denotes the state of a (possible) link
 /// between transactions
 ///
 /// * `Unlinked`: The link points to no future target so far
@@ -104,13 +104,13 @@ enum TxLinkState{
     MultiLinked(Vec<TxId>)
 }
 
-/// TxLinkMapState denotes the general link state of a
+/// `TxLinkMapState` denotes the general link state of a
 /// transaction. Depending on its value it can overwrite
 /// the single link states. It can take the values:
 ///
 /// * `Linkable`: The transaction can _generally_ be linked
 ///         to other transactions. This means that the linking
-///         permit depends on the TxLinkState of the
+///         permit depends on the `TxLinkState` of the
 ///         relationship that should be established
 /// * `Unlinkable`: The transaction can not be linked to any
 ///         other transaction (anymore). This state should
@@ -128,9 +128,9 @@ enum TxLinkMapState{
     Finalized(TxId),
 }
 
-/// TxLinkMap defines existing and possible links of a transaction
+/// `TxLinkMap` defines existing and possible links of a transaction
 /// to future transactions. It maps transaction relationships to
-/// TxLinkStates and holds a TxLinkMapState to denote the general
+/// `TxLinkState`s and holds a `TxLinkMapState` to denote the general
 /// link state of the transaction.
 
 #[derive(Clone)]
