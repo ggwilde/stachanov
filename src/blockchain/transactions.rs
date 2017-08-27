@@ -67,6 +67,16 @@ pub struct TxId{
     pub tx_index: TxIndex,
 }
 
+impl TxId{
+
+    /// Creates a new `TxId`
+
+    fn new(block_id: BlockId, tx_index: TxIndex) -> TxId{
+        TxId{block_id: block_id, tx_index: tx_index}
+    }
+
+}
+
 /// `TxRel` denotes the relationship between two transactions.
 /// Transactions can relate in various ways to each other.
 /// For example workloads can be transformed into coupons,
