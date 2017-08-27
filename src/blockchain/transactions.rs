@@ -91,27 +91,31 @@ pub enum TxRel{
     Dummy
 }
 
-/// `TxLinkState` denotes the state of a (possible) link
-/// between transactions
+/// `TxLink` denotes the state of a link between transactions
+/// It can either be a SingleLink or a MultiLink with the
+/// following semantics:
 ///
-/// * `Unlinked`: The link points to no future target so far
-/// * `SingleLinked(TxId)': The link points to a single target
-///         in the future and is seen as 'spent', which means,
-///         no other target transaction can be linked to the
-///         source transaction in the same relationship.
-/// * `MultiLinked(Vec<TxId>)`: The link points to a set of
-///         transactions in the future. This is utilized by
-///         transactions such as Order, that can have links
-///         to multiple workloads. If a transaction is multi-
-///         linked, it is the responsibility of the link
+/// * `SingleLink(Option<TxId>)': Used for 1:1 relationships
+///         between transactions. A typical example would be
+///         the relationship between workloads and labor coupons.
+///         Each workload can only be claimed by exactly one
+///         future coupon. If the inner value is None, it
+///         means the relationship has not been claimed yet.
+///
+/// * `MultiLink(Vec<TxId>)`: Used for 1:n relationships
+///         between transactions. Instead of a single (optional)
+///         transaction id, MultiLink wraps a list of ids to future
+///         transactions. This is for example used in linkmaps
+///         for Order transactions, which can have multiple
+///         workloads attached to it. It should be emphasized,
+///         that it is the responsibility of the link
 ///         verification mechanism to check if possible
 ///         quotas are exceeded.
 
 #[derive(Clone)]
-enum TxLinkState{
-    Unlinked,
-    SingleLinked(TxId),
-    MultiLinked(Vec<TxId>)
+enum TxLink{
+    SingleLink(Option<TxId>),
+    MultiLink(Vec<TxId>)
 }
 
 /// `TxLinkMapState` denotes the general link state of a
@@ -120,13 +124,13 @@ enum TxLinkState{
 ///
 /// * `Linkable`: The transaction can _generally_ be linked
 ///         to other transactions. This means that the linking
-///         permit depends on the `TxLinkState` of the
-///         relationship that should be established
+///         permit depends on the state of `TxLink` for
+///         each relationship.
 /// * `Unlinkable`: The transaction can not be linked to any
 ///         other transaction (anymore). This state should
 ///         be used when a transaction type is deprecated
 ///         by a later system version or if the list of
-///         (possible) links / relationships is empty
+///         relationships for the transaction is empty
 /// * `Finalized`: The transaction was finalized by another
 ///         transaction and can not link to a future target
 ///         transaction anymore.
@@ -140,11 +144,11 @@ enum TxLinkMapState{
 
 /// `TxLinkMap` defines existing and possible links of a transaction
 /// to future transactions. It maps transaction relationships to
-/// `TxLinkState`s and holds a `TxLinkMapState` to denote the general
+/// `TxLink`s and holds a `TxLinkMapState` to denote the general
 /// link state of the transaction.
 
 #[derive(Clone)]
 pub struct TxLinkMap{
     state: TxLinkMapState,
-    links: HashMap<TxRel, TxLinkState>
+    links: HashMap<TxRel, TxLink>
 }
