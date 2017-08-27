@@ -85,4 +85,8 @@ pub trait ChainStorage{
 
     fn set_linkmap(&mut self, tx_id: TxId, map: TxLinkMap);
 
+    /// Removes all data from the storage
+
+    fn reset(&mut self);
+
 }
