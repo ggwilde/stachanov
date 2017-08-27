@@ -33,7 +33,8 @@ use blockchain::traits::Hashable;
 #[derive(PartialEq)]
 #[derive(Clone)]
 #[derive(Copy)]
-pub struct BlockId([u8; 32]);
+#[derive(Debug)]
+pub struct BlockId(pub [u8; 32]);
 
 #[derive(Clone)]
 pub struct Block{
