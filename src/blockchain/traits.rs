@@ -22,7 +22,7 @@ use blockchain::block::Block;
 use blockchain::block::BlockId;
 use blockchain::errors::IdCollisionError;
 use blockchain::transactions::TxId;
-use blockchain::transactions::TxLinkMap;
+use blockchain::transactions::TxState;
 use blockchain::transactions::Transaction;
 
 pub trait Hashable {
@@ -74,16 +74,16 @@ pub trait ChainStorage{
 
     fn get_transaction(&self, tx_id: TxId) -> Option<Transaction>;
 
-    /// Fetches the link map of a transaction
+    /// Fetches the `TxState` of a transaction
     /// * `tx_id`: the transaction id
 
-    fn get_linkmap(&self, tx_id: TxId) -> Option<TxLinkMap>;
+    fn get_transaction_state(&self, tx_id: TxId) -> Option<TxState>;
 
-    /// Updates the TxLinkMap of a transaction
+    /// Updates the `TxState` of a transaction
     /// * `tx_id`: the transaction id
-    /// * `map`: the appropriate link map
+    /// * `tx_state`: the appropriate transaction state
 
-    fn set_linkmap(&mut self, tx_id: TxId, map: TxLinkMap);
+    fn set_transaction_state(&mut self, tx_id: TxId, tx_state: TxState);
 
     /// Removes all data from the storage
 

@@ -77,78 +77,80 @@ impl TxId{
 
 }
 
-/// `TxRel` denotes the relationship between two transactions.
-/// Transactions can relate in various ways to each other.
-/// For example workloads can be transformed into coupons,
-/// coupons can be redeemed in a relation to a dispatcher
-/// collective, etc
+/// `TxRelId` acts as a unique identifier for a relationship
+/// between transactions. Transactions can relate in various
+/// ways to each other. For example workloads can be used
+/// to create coupons, orders are in a relationship to a
+/// production output, etc
 
 #[derive(Eq)]
 #[derive(PartialEq)]
 #[derive(Hash)]
 #[derive(Clone)]
-pub enum TxRel{
+pub enum TxRelId{
     Dummy
 }
 
-/// `TxLink` denotes the state of a link between transactions
-/// It can either be a SingleLink or a MultiLink with the
-/// following semantics:
+/// `TxRel` denotes the state of a 1:1 or 1:n relationship
+/// between transactions. It can either be a OneToOne or
+/// a OneToMany with the following semantics:
 ///
-/// * `SingleLink(Option<TxId>)': Used for 1:1 relationships
+/// * `OneToOne(Option<TxId>)': Used for 1:1 relationships
 ///         between transactions. A typical example would be
 ///         the relationship between workloads and labor coupons.
 ///         Each workload can only be claimed by exactly one
 ///         future coupon. If the inner value is None, it
 ///         means the relationship has not been claimed yet.
 ///
-/// * `MultiLink(Vec<TxId>)`: Used for 1:n relationships
+/// * `OneToMany(Vec<TxId>)`: Used for 1:n relationships
 ///         between transactions. Instead of a single (optional)
-///         transaction id, MultiLink wraps a list of ids to future
-///         transactions. This is for example used in linkmaps
-///         for Order transactions, which can have multiple
+///         transaction id, OneToMany wraps a list of ids to future
+///         transactions. This is for example used in transaction
+///         states of order transactions, which can have multiple
 ///         workloads attached to it. It should be emphasized,
-///         that it is the responsibility of the link
+///         that it is the responsibility of the relationship
 ///         verification mechanism to check if possible
 ///         quotas are exceeded.
 
 #[derive(Clone)]
-enum TxLink{
-    SingleLink(Option<TxId>),
-    MultiLink(Vec<TxId>)
+enum TxRel{
+    OneToOne(Option<TxId>),
+    OneToMany(Vec<TxId>)
 }
 
-/// `TxLinkMapState` denotes the general link state of a
-/// transaction. Depending on its value it can overwrite
-/// the single link states. It can take the values:
+/// `TotalRelState` denotes the general state of relationships.
+/// It is a part of `TxState` and is checked _before_ the list
+/// of relationships. It can take the values:
 ///
-/// * `Linkable`: The transaction can _generally_ be linked
-///         to other transactions. This means that the linking
-///         permit depends on the state of `TxLink` for
-///         each relationship.
-/// * `Unlinkable`: The transaction can not be linked to any
+/// * `Claimable`: The transaction's relationships can _generally_
+///         be claimed by other transactions. This means that it
+///         depends on the state of the specific relationship,
+///         if an attempt to claim it is succesful
+/// * `Unclaimable`: The transaction can not be claimed by any
 ///         other transaction (anymore). This state should
 ///         be used when a transaction type is deprecated
 ///         by a later system version or if the list of
 ///         relationships for the transaction is empty
 /// * `Finalized`: The transaction was finalized by another
-///         transaction and can not link to a future target
-///         transaction anymore.
+///         transaction and none of its relationships can
+///         by claimed by other transactions anymore.
 
 #[derive(Clone)]
-enum TxLinkMapState{
-    Linkable,
-    Unlinkable,
+pub enum TxTotalRelState{
+    Claimable,
+    Unclaimable,
     Finalized(TxId),
 }
 
-/// `TxLinkMap` defines existing and possible links of a transaction
-/// to future transactions. It maps transaction relationships to
-/// `TxLink`s and holds a `TxLinkMapState` to denote the general
-/// link state of the transaction.
+/// `TxState` defines the volatile part of transactions. Transactions
+/// as such can not be changed after they have been added to a block,
+/// however depending on later transactions they can change their
+/// state. The main purpose of managing the state is to ensure that
+/// transactions relate to each other in the right way (e.g. that
+/// coupons can not be double spent)
 
 #[derive(Clone)]
-pub struct TxLinkMap{
-    state: TxLinkMapState,
-    links: HashMap<TxRel, TxLink>
+pub struct TxState{
+    total_rel_state: TxTotalRelState,
+    relationships: HashMap<TxRelId, TxRel>
 }
