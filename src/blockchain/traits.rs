@@ -23,6 +23,7 @@ use blockchain::block::BlockId;
 use blockchain::errors::IdCollisionError;
 use blockchain::transactions::TxId;
 use blockchain::transactions::TxState;
+use blockchain::transactions::TxProgError;
 use blockchain::transactions::Transaction;
 
 pub trait Hashable {
@@ -79,11 +80,16 @@ pub trait ChainStorage{
 
     fn get_transaction_state(&self, tx_id: TxId) -> Option<TxState>;
 
-    /// Updates the `TxState` of a transaction
+    /// Updates the `TxState` of a transaction.
+    /// Returns a TxProgError when tx_id points to
+    /// a non-existent transaction
+    ///
     /// * `tx_id`: the transaction id
     /// * `tx_state`: the appropriate transaction state
 
-    fn set_transaction_state(&mut self, tx_id: TxId, tx_state: TxState);
+    fn set_transaction_state(&mut self,
+                             tx_id: TxId,
+                             tx_state: TxState) -> Result<(), TxProgError>;
 
     /// Removes all data from the storage
 
