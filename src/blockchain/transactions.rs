@@ -252,11 +252,14 @@ impl fmt::Display for BadClaim{
 ///         layer tries to overwrite an existing relationship
 ///         upon initialization. This is merely meant as a
 ///         safeguard, especially for migration logic.
+/// * `UnknownTx`: The requested transaction does not exist.
+///         Wraps the transaction id that caused the error.
 
 #[derive(Debug)]
 pub enum TxProgErrorReason{
     UnknownRelId(TxRelId),
-    RelIdExists(TxRelId)
+    RelIdExists(TxRelId),
+    UnknownTx(TxId),
 }
 
 impl fmt::Display for TxProgErrorReason {
@@ -266,6 +269,8 @@ impl fmt::Display for TxProgErrorReason {
                 write!(f, "Transaction has no relationship {:?}.", tx_rel_id),
             TxProgErrorReason::RelIdExists(ref tx_rel_id) =>
                 write!(f, "Transaction already has a relationship {:?}.", tx_rel_id),
+            TxProgErrorReason::UnknownTx(ref tx_id) =>
+                write!(f, "Unknown transaction. Requested id was {:?}.", tx_id),
         }
     }
 }
