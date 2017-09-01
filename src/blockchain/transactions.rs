@@ -238,8 +238,8 @@ impl fmt::Display for BadClaim{
     }
 }
 
-/// `TxRelProgErrorReason` defines possible reasons for
-/// `TxRelProgError`s:
+/// `TxProgErrorReason` defines possible reasons for
+/// `TxProgError`s:
 ///
 ///  * `UnknownRelId`: The requested relationship id does
 ///         not exist. The wrapped value is the requested
@@ -254,45 +254,45 @@ impl fmt::Display for BadClaim{
 ///         safeguard, especially for migration logic.
 
 #[derive(Debug)]
-pub enum TxRelProgErrorReason{
+pub enum TxProgErrorReason{
     UnknownRelId(TxRelId),
     RelIdExists(TxRelId)
 }
 
-impl fmt::Display for TxRelProgErrorReason {
+impl fmt::Display for TxProgErrorReason {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            TxRelProgErrorReason::UnknownRelId(ref tx_rel_id) =>
+            TxProgErrorReason::UnknownRelId(ref tx_rel_id) =>
                 write!(f, "Transaction has no relationship {:?}.", tx_rel_id),
-            TxRelProgErrorReason::RelIdExists(ref tx_rel_id) =>
+            TxProgErrorReason::RelIdExists(ref tx_rel_id) =>
                 write!(f, "Transaction already has a relationship {:?}.", tx_rel_id),
         }
     }
 }
 
-/// `TxRelProgError`s signify problems during
-/// relationship initialization/migration.
-/// For possible reasons look up the docs
-/// of `TxRelProgErrorReason`
+/// `TxProgError`s signify problems during
+/// transaction handling. For possible
+/// reasons look up the docs
+/// of `TxProgErrorReason`
 
 #[derive(Debug)]
-pub struct TxRelProgError{
-    pub reason: TxRelProgErrorReason
+pub struct TxProgError{
+    pub reason: TxProgErrorReason
 }
 
-impl TxRelProgError{
-    pub fn new(reason: TxRelProgErrorReason) -> TxRelProgError{
-        TxRelProgError{reason: reason}
+impl TxProgError{
+    pub fn new(reason: TxProgErrorReason) -> TxProgError{
+        TxProgError{reason: reason}
     }
 }
 
-impl Error for TxRelProgError{
+impl Error for TxProgError{
     fn description(&self) -> &str{
         "Programming Error in TxRel handling"
     }
 }
 
-impl fmt::Display for TxRelProgError{
+impl fmt::Display for TxProgError{
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "Programming Error in TxRel handling. Reason: {}", self.reason)
     }
@@ -338,18 +338,18 @@ impl TxState{
     /// method. To change the state of a relationship, use the
     /// claim_rel method.
     ///
-    /// Returns a TxRelProgError if relationship already exists
+    /// Returns a TxProgError if relationship already exists
     ///
     /// # Arguments
     /// * `tx_rel_id`: A unique identifier for the new relationship
 
     pub fn add_one_to_one_rel(&mut self,
                               tx_rel_id: TxRelId)
-                              -> Result<(), TxRelProgError>{
+                              -> Result<(), TxProgError>{
 
         if self.relationships.contains_key(&tx_rel_id){
-            let reason = TxRelProgErrorReason::RelIdExists(tx_rel_id);
-            let err = TxRelProgError::new(reason);
+            let reason = TxProgErrorReason::RelIdExists(tx_rel_id);
+            let err = TxProgError::new(reason);
             return Err(err)
         }
 
@@ -365,18 +365,18 @@ impl TxState{
     /// method. To change the state of a relationship, use the
     /// claim_rel method.
     ///
-    /// Returns a TxRelProgError if relationship already exists
+    /// Returns a TxProgError if relationship already exists
     ///
     /// # Arguments
     /// * `tx_rel_id`: A unique identifier for the new relationship
 
     pub fn add_one_to_many_rel(&mut self,
                                tx_rel_id: TxRelId)
-                               -> Result<(), TxRelProgError>{
+                               -> Result<(), TxProgError>{
 
         if self.relationships.contains_key(&tx_rel_id){
-            let reason = TxRelProgErrorReason::RelIdExists(tx_rel_id);
-            let err = TxRelProgError::new(reason);
+            let reason = TxProgErrorReason::RelIdExists(tx_rel_id);
+            let err = TxProgError::new(reason);
             return Err(err)
         }
 
@@ -390,19 +390,19 @@ impl TxState{
     /// is provided for the transaction layer to check validity of
     /// OneToMany relationships, also for testing purposes.
     ///
-    /// Returns TxRelProgError if the relationship doesn't exist
+    /// Returns TxProgError if the relationship doesn't exist
     ///
     /// # Arguments
     /// * `tx_rel_id`: A unique identifier for the relationship
 
-    pub fn get_rel(&self, tx_rel_id: TxRelId) -> Result<&TxRel, TxRelProgError>{
+    pub fn get_rel(&self, tx_rel_id: TxRelId) -> Result<&TxRel, TxProgError>{
 
         match self.relationships.get(&tx_rel_id){
 
             Some(rel) => return Ok(rel),
             None => {
-                let reason = TxRelProgErrorReason::UnknownRelId(tx_rel_id);
-                let err = TxRelProgError::new(reason);
+                let reason = TxProgErrorReason::UnknownRelId(tx_rel_id);
+                let err = TxProgError::new(reason);
                 return Err(err)
             }
 
