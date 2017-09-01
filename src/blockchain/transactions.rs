@@ -503,7 +503,7 @@ fn test_tx_claim_total_rel_state_unclaimable(){
 
     if let Err(err) = result{
         match err.reason{
-            TxUnclaimable => {},
+            BadClaimReason::TxUnclaimable => {},
             _ => assert!(false, "Claim was rejected for the wrong reason")
         }
     }
