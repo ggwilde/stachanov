@@ -339,6 +339,12 @@ impl TxState{
         self.total_rel_state = total_rel_state;
     }
 
+    /// Returns a reference to the relationship map
+
+    pub fn get_rel_map(&self) -> &HashMap<TxRelId, TxRel>{
+        &self.relationships
+    }
+
     /// Adds a 1:1 relationship to the state. Use this to create
     /// relationships that can be claimed by exactly one transaction.
     /// Please note, that this is a initialization / migration
