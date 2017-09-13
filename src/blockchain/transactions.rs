@@ -257,12 +257,18 @@ impl fmt::Display for BadClaim{
 ///         safeguard, especially for migration logic.
 /// * `UnknownTx`: The requested transaction does not exist.
 ///         Wraps the transaction id that caused the error.
+/// * `RefOrderError`: This happens, when the verification
+///         logic of a transaction tries to create a state
+///         of the blockchain in which a later transaction
+///         is claimed by an earlier transaction or a
+///         transaction in the same block.
 
 #[derive(Debug)]
 pub enum TxProgErrorReason{
     UnknownRelId(TxRelId),
     RelIdExists(TxRelId),
     UnknownTx(TxId),
+    RefOrderError
 }
 
 impl fmt::Display for TxProgErrorReason {
@@ -274,6 +280,8 @@ impl fmt::Display for TxProgErrorReason {
                 write!(f, "Transaction already has a relationship {:?}.", tx_rel_id),
             TxProgErrorReason::UnknownTx(ref tx_id) =>
                 write!(f, "Unknown transaction. Requested id was {:?}.", tx_id),
+            TxProgErrorReason::RefOrderError =>
+                write!(f, "The reference order of the transactions is illegal."),
         }
     }
 }
