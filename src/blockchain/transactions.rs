@@ -143,6 +143,7 @@ pub enum TxRel{
 ///         by claimed by other transactions anymore.
 
 #[derive(Clone)]
+#[derive(Debug)]
 pub enum TxTotalRelState{
     Claimable,
     Unclaimable,
