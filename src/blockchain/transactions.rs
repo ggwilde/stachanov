@@ -54,6 +54,7 @@ impl Hashable for Transaction{
 #[derive(Hash)]
 #[derive(Clone)]
 #[derive(Debug)]
+#[derive(Copy)]
 pub struct TxIndex(pub u16);
 
 /// `TxId` denotes a registered transaction in the chain.
@@ -66,6 +67,7 @@ pub struct TxIndex(pub u16);
 #[derive(Hash)]
 #[derive(Clone)]
 #[derive(Debug)]
+#[derive(Copy)]
 pub struct TxId{
     pub block_id: BlockId,
     pub tx_index: TxIndex,
@@ -439,9 +441,8 @@ impl TxState{
                 let err = BadClaim::new(reason);
                 return Err(err)
             }
-            TxTotalRelState::Finalized(ref fin_tx_id) => {
-                let cloned = fin_tx_id.clone();
-                let reason = BadClaimReason::TxFinalized(cloned);
+            TxTotalRelState::Finalized(fin_tx_id) => {
+                let reason = BadClaimReason::TxFinalized(fin_tx_id);
                 let err = BadClaim::new(reason);
                 return Err(err)
             }
@@ -461,9 +462,8 @@ impl TxState{
             match *relationship{
 
                 TxRel::OneToOne(ref mut claimer_tx_id) => {
-                    if claimer_tx_id.is_some(){
-                        let cloned = claimer_tx_id.clone().unwrap();
-                        let reason = BadClaimReason::RelClaimed(tx_rel_id, cloned);
+                    if let Some(claimer_tx_id) = *claimer_tx_id{
+                        let reason = BadClaimReason::RelClaimed(tx_rel_id, claimer_tx_id);
                         let err = BadClaim::new(reason);
                         return Err(err)
                     }
@@ -523,7 +523,7 @@ fn test_tx_claim_total_rel_state_finalized(){
     let fin_block_id = BlockId([1; 32]);
     let fin_tx_index = TxIndex(0);
     let fin_tx_id = TxId::new(fin_block_id, fin_tx_index);
-    let error_correct_id = fin_tx_id.clone();
+    let error_correct_id = fin_tx_id;
 
     let mut tx_state = TxState::new(TxTotalRelState::Finalized(fin_tx_id));
 
@@ -590,7 +590,7 @@ fn test_tx_claim_one_to_one_rel(){
     let block_id = BlockId([0; 32]);
     let tx_index = TxIndex(0);
     let tx_id = TxId::new(block_id, tx_index);
-    let error_correct_id = tx_id.clone();
+    let error_correct_id = tx_id;
 
     let result = tx_state.claim_rel(TxRelId::Dummy, tx_id);
     assert!(result.is_ok(), "Unclaimed 1:1 relationship could not get claimed");
