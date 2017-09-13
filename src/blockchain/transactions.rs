@@ -77,7 +77,7 @@ impl TxId{
 
     /// Creates a new `TxId`
 
-    fn new(block_id: BlockId, tx_index: TxIndex) -> TxId{
+    pub fn new(block_id: BlockId, tx_index: TxIndex) -> TxId{
         TxId{block_id: block_id, tx_index: tx_index}
     }
 
@@ -120,7 +120,7 @@ pub enum TxRelId{
 ///         quotas are exceeded.
 
 #[derive(Clone)]
-enum TxRel{
+pub enum TxRel{
     OneToOne(Option<TxId>),
     OneToMany(Vec<TxId>)
 }
@@ -426,9 +426,9 @@ impl TxState{
     /// * `tx_rel_id`: Relationship that should be claimed
     /// * `tx_id`: Id of the transaction that wants to claims it
 
-    fn claim_rel(&mut self,
-                 tx_rel_id: TxRelId,
-                 tx_id: TxId) -> Result<(), BadClaim>{
+    pub fn claim_rel(&mut self,
+                     tx_rel_id: TxRelId,
+                     tx_id: TxId) -> Result<(), BadClaim>{
 
         // Check the total relationship state first. If it is
         // Unclaimable or Finalized the claim is rejected
