@@ -18,11 +18,5 @@
 //    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-pub mod header;
-pub mod body;
-pub mod traits;
-pub mod block;
-pub mod errors;
-pub mod transactions;
-mod storages;
-mod utils;
+pub mod blocks;
+pub mod txstates;
