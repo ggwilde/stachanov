@@ -22,6 +22,7 @@ use blockchain::traits::Hashable;
 use blockchain::traits::BlockStorage;
 use blockchain::block::Block;
 use blockchain::block::BlockId;
+use blockchain::block::BlockErrorReason;
 use blockchain::transactions::TxId;
 use blockchain::transactions::TxIndex;
 use blockchain::transactions::Transaction;
@@ -67,6 +68,7 @@ pub fn test_fetch_block<T>(storage: &mut T) where T: BlockStorage{
 pub fn test_block_id_collision<T>(storage: &mut T) where T: BlockStorage{
 
     let block = Block::new([0; 32], None, 0, vec![]);
+    let block_id = block.get_id();
 
     let cloned = block.clone();
     let result = storage.append_verified_block(cloned);
@@ -74,6 +76,20 @@ pub fn test_block_id_collision<T>(storage: &mut T) where T: BlockStorage{
 
     let result = storage.append_verified_block(block);
     assert!(result.is_err(), "Block id collision was not detected");
+
+    if let Err(err) = result{
+        match err.reason{
+            BlockErrorReason::IdCollision(err_block_id) => {
+                assert_eq!(err_block_id, block_id,
+                           "BlockErrorReason::IdCollision wrapped the \
+                            wrong block_id");
+            },
+            _ => {
+                assert!(false, "Storage returned a wrong error \
+                                when trying to provoke an id collision");
+            }
+        }
+    }
 
 }
 

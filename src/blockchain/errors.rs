@@ -21,24 +21,6 @@
 use std::error::Error;
 use std::fmt;
 
-/// `IdCollisionErrors` happen when a new block is added, that
-/// has the same sha3 hash as an already registered block
-
-#[derive(Debug)]
-pub struct IdCollisionError;
-
-impl Error for IdCollisionError{
-    fn description(&self) -> &str{
-        "BlockId collision found. Block rejected."
-    }
-}
-
-impl fmt::Display for IdCollisionError{
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "BlockId collision found. Block rejected.")
-    }
-}
-
 /// `VerificationErrorReason` is an enum used to denote the type
 /// of verification error
 

@@ -20,7 +20,7 @@
 
 use blockchain::block::Block;
 use blockchain::block::BlockId;
-use blockchain::errors::IdCollisionError;
+use blockchain::block::BlockError;
 use blockchain::transactions::TxId;
 use blockchain::transactions::TxState;
 use blockchain::transactions::TxProgError;
@@ -49,7 +49,7 @@ pub trait BlockStorage{
     /// * `block`: The verified block
 
     fn append_verified_block(&mut self, block: Block)
-            -> Result<(), IdCollisionError>;
+            -> Result<(), BlockError>;
 
     /// Fetches a transaction identifier by its id
     /// * `tx_id`: the transaction id

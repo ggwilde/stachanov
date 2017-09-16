@@ -18,6 +18,8 @@
 //    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+use std::error::Error;
+use std::fmt;
 use blockchain::header::BlockHeader;
 use blockchain::body::BlockBody;
 use blockchain::transactions::Transaction;
@@ -35,6 +37,64 @@ use blockchain::traits::Hashable;
 #[derive(Copy)]
 #[derive(Debug)]
 pub struct BlockId(pub [u8; 32]);
+
+// ---------------------------------------------------------------------
+
+/// `BlockErrorReason` defines possible reasons for
+/// `BlockError`s:
+///
+///  * `UnknownBlockId`: The supplied block id does not
+///         point to an existing block.
+///  * `IdCollision`: The supplied block id collides
+///         with another block id. This is used as
+///         as safeguard for hash collisions.
+
+
+#[derive(Debug)]
+pub enum BlockErrorReason{
+    UnknownBlockId(BlockId),
+    IdCollision(BlockId),
+}
+
+impl fmt::Display for BlockErrorReason {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            BlockErrorReason::UnknownBlockId(ref block_id) =>
+                write!(f, "Unknown BlockId: {:?}.", block_id),
+            BlockErrorReason::IdCollision(ref block_id) =>
+                write!(f, "BlockId collided: {:?}.", block_id),
+        }
+    }
+}
+
+/// `BlockError`s signify problems during block handling.
+/// For possible reasons look up the docs of `BlockErrorReason`
+
+#[derive(Debug)]
+pub struct BlockError{
+    pub reason: BlockErrorReason
+}
+
+impl BlockError{
+    pub fn new(reason: BlockErrorReason) -> BlockError{
+        BlockError{reason: reason}
+    }
+}
+
+impl Error for BlockError{
+    fn description(&self) -> &str{
+        "Error in block handling"
+    }
+}
+
+impl fmt::Display for BlockError{
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Error in block handling. Reason: {}", self.reason)
+    }
+}
+
+// ---------------------------------------------------------------------
+
 
 #[derive(Clone)]
 pub struct Block{
