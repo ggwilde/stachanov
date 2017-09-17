@@ -93,6 +93,53 @@ pub fn test_block_id_collision<T>(storage: &mut T) where T: BlockStorage{
 
 }
 
+/// Tests if a storage correctly recognizes orphaned
+/// blocks
+///
+/// # Arguments
+/// * `storage`: A storage object that implements
+///              the `BlockStorage` trait
+
+pub fn test_append_orphaned<T>(storage: &mut T) where T: BlockStorage{
+
+    // append first block
+
+    let block = Block::new([0; 32], None, 0, vec![]);
+    let cloned = block.clone();
+
+    let result = storage.append_verified_block(block);
+    assert!(result.is_ok(), "Could not append block");
+
+    // create two subsequent blocks, but add only
+    // the last of it leaving a gap
+
+    let block2 = Block::new([0; 32], Some(&cloned), 0, vec![]);
+    let block3 = Block::new([0; 32], Some(&block2), 0, vec![]);
+    let block3_id = block3.get_id();
+
+    let result = storage.append_verified_block(block3);
+    assert!(result.is_err(), "Orphaned block could be added to storage");
+
+    // check, if error reason is correct
+
+    if let Err(err) = result{
+        match err.reason{
+            BlockErrorReason::OrphanedBlock(block_id) => {
+                assert_eq!(block_id, block3_id,
+                           "Storage correctly returned OrphanedBlock
+                            as error reason, however the wrapped block
+                            id was not correct");
+            },
+            _ => {
+                assert!(false, "Storage returned a wrong error \
+                                when trying to add an orphaned \
+                                block");
+            }
+        }
+    }
+
+}
+
 /// Tests if a storage fetches dummy transactions
 /// correctly
 ///

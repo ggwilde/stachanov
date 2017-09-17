@@ -54,6 +54,7 @@ pub struct BlockId(pub [u8; 32]);
 pub enum BlockErrorReason{
     UnknownBlockId(BlockId),
     IdCollision(BlockId),
+    OrphanedBlock(BlockId)
 }
 
 impl fmt::Display for BlockErrorReason {
@@ -63,6 +64,8 @@ impl fmt::Display for BlockErrorReason {
                 write!(f, "Unknown BlockId: {:?}.", block_id),
             BlockErrorReason::IdCollision(ref block_id) =>
                 write!(f, "BlockId collided: {:?}.", block_id),
+            BlockErrorReason::OrphanedBlock(ref block_id) =>
+                write!(f, "Block with id {:?} would be an orphan", block_id),
         }
     }
 }

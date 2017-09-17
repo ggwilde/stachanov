@@ -36,6 +36,8 @@ pub fn test_chain_storage<T>(mut storage: &mut T) where T: ChainStorage{
     storage.reset();
     blockstorage::test_block_id_collision::<T>(&mut storage);
     storage.reset();
+    blockstorage::test_append_orphaned::<T>(&mut storage);
+    storage.reset();
     blockstorage::test_fetch_dummy_transaction::<T>(&mut storage);
     storage.reset();
 

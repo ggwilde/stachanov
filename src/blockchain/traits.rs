@@ -44,8 +44,15 @@ pub trait BlockStorage{
     fn get_block(&self, block_id: BlockId) -> Option<Block>;
 
     /// Append a block to the storage *without* checking its
-    /// validity. Will return an IdCollisionError if there
-    /// already is a block with the same block id.
+    /// validity.
+    ///
+    /// Will return a BlockError with reason IdCollision when
+    /// there already is a block with the same block id, a
+    /// BlockError with reason OrphanedBlock if the block
+    /// has no valid predecessor
+    ///
+    /// # Arguments
+    ///
     /// * `block`: The verified block
 
     fn append_verified_block(&mut self, block: Block)
