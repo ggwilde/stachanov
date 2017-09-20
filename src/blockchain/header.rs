@@ -23,6 +23,7 @@ extern crate rand;
 use self::crypto::ed25519;
 use self::rand::Rng;
 use self::rand::OsRng;
+use blockchain::block::BlockId;
 use blockchain::utils::u64_to_u8le;
 use blockchain::utils::u8le_to_u64;
 use blockchain::utils::sha3_256;
@@ -116,6 +117,15 @@ impl BlockHeader{
 
     pub fn get_timestamp(&self) -> u64{
         self.timestamp
+    }
+
+    /// Gets the block id of the predecessor
+
+    pub fn get_previous_id(&self) -> Option<BlockId>{
+        if self.prev_block_hash == [0; 32]{
+            return None
+        }
+        Some(BlockId(self.prev_block_hash))
     }
 
     /// Creates a new BlockHeader from a byte vector.

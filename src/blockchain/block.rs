@@ -149,6 +149,13 @@ impl Block{
         BlockId(header_hash)
     }
 
+    /// Gets the block id of the predecessor
+    /// of this block
+
+    pub fn get_previous_id(&self) -> Option<BlockId>{
+        self.header.get_previous_id()
+    }
+
     /// Gets the index of the block
 
     pub fn get_index(&self) -> u64{
