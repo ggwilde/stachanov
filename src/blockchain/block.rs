@@ -141,6 +141,12 @@ impl Block{
 
     }
 
+    /// Gets a reference to the header
+
+    pub fn get_header_ref(&self) -> &BlockHeader{
+        &self.header
+    }
+
     /// Gets the unique hash identifier
     /// of this block
 
