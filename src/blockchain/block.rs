@@ -145,8 +145,7 @@ impl Block{
     /// of this block
 
     pub fn get_id(&self) -> BlockId{
-        let header_hash = self.header.to_sha3_hash();
-        BlockId(header_hash)
+        self.header.get_id()
     }
 
     /// Gets the block id of the predecessor

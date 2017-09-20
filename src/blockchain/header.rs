@@ -107,6 +107,13 @@ impl BlockHeader{
 
     }
 
+    /// Gets the unique hash identifier
+
+    pub fn get_id(&self) -> BlockId{
+        let header_hash = self.to_sha3_hash();
+        BlockId(header_hash)
+    }
+
     /// Gets the index of the header
 
     pub fn get_index(&self) -> u64{
