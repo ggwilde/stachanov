@@ -55,7 +55,42 @@ pub fn test_fetch_block<T>(storage: &mut T) where T: BlockStorage{
     let non_existent_id = BlockId([0;32]);
     let fetched_block = storage.get_block(non_existent_id);
     assert!(fetched_block.is_none(),
-            "Non-existent block id returned a result");
+            "Fetching a block by a non-existent block id \
+             returned a result");
+
+}
+
+/// Tests if a storage fetches `BlockHeader`s
+/// correctly
+///
+/// # Arguments
+/// * `storage`: A storage object that implements
+///              the `BlockStorage` trait
+
+pub fn test_fetch_header<T>(storage: &mut T) where T: BlockStorage{
+
+    let block = Block::new([0; 32], None, 0, vec![]);
+    let block_id = block.get_id();
+
+    let result = storage.append_verified_block(block);
+    assert!(result.is_ok(), "Could not append block");
+
+    let fetched_header = storage.get_header(block_id);
+    assert!(fetched_header.is_some(),
+            "Block header for existing block could not \
+             be retrieved");
+
+    if let Some(header) = fetched_header {
+        let fetched_id = header.get_id();
+        assert_eq!(fetched_id, block_id,
+                   "Fetched header has not the required id");
+    }
+
+    let non_existent_id = BlockId([0;32]);
+    let fetched_header = storage.get_header(non_existent_id);
+    assert!(fetched_header.is_none(),
+            "Fetching a block header by a non-existent block \
+             id returned a result");
 
 }
 

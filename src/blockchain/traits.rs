@@ -21,6 +21,7 @@
 use blockchain::block::Block;
 use blockchain::block::BlockId;
 use blockchain::block::BlockError;
+use blockchain::header::BlockHeader;
 use blockchain::transactions::TxId;
 use blockchain::transactions::TxState;
 use blockchain::transactions::TxProgError;
@@ -42,6 +43,14 @@ pub trait BlockStorage{
     ///               the sha3 hash of the block header)
 
     fn get_block(&self, block_id: BlockId) -> Option<Block>;
+
+    /// Fetches a block header identified by its unique id
+    ///
+    /// # Arguments
+    /// * `block_id`: The block identifier (equivalent to the
+    ///               the sha3 hash of the block header)
+
+    fn get_header(&self, block_id: BlockId) -> Option<BlockHeader>;
 
     /// Append a block to the storage *without* checking its
     /// validity.
