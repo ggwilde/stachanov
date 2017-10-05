@@ -26,7 +26,6 @@ use std::fmt;
 
 #[derive(Debug)]
 pub enum VerificationErrorReason{
-    InvalidProofOfWork,
     InvalidIssuerSignature,
     InvalidContentHash,
     InvalidChainLink
@@ -35,7 +34,6 @@ pub enum VerificationErrorReason{
 impl fmt::Display for VerificationErrorReason {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            VerificationErrorReason::InvalidProofOfWork => write!(f, "Proof of work was not valid"),
             VerificationErrorReason::InvalidIssuerSignature => write!(f, "Block header signature doesn't match issuer"),
             VerificationErrorReason::InvalidContentHash => write!(f, "Block header content hash doesn't match transaction merkle tree root"),
             VerificationErrorReason::InvalidChainLink => write!(f, "Chain link is invalid (prev_block_hash, timestamp or index incorrect)")

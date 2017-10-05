@@ -29,7 +29,6 @@ use blockchain::utils::u8le_to_u64;
 use blockchain::utils::sha3_256;
 use blockchain::traits::Hashable;
 use blockchain::errors::VerificationError;
-use blockchain::errors::VerificationErrorReason::InvalidProofOfWork;
 use blockchain::errors::VerificationErrorReason::InvalidIssuerSignature;
 use blockchain::errors::VerificationErrorReason::InvalidChainLink;
 
@@ -41,7 +40,6 @@ pub struct BlockHeader{
     index: u64,
     timestamp: u64,
     pub content_hash: [u8; 32],
-    pub nonce: [u8; 32],
     signature: [u8; 64]
 }
 
@@ -101,7 +99,6 @@ impl BlockHeader{
             index: index,
             timestamp: timestamp,
             content_hash: content_hash,
-            nonce: [0; 32],
             signature: [0; 64]
         }
 
@@ -208,20 +205,10 @@ impl BlockHeader{
 
         // --
 
-        let mut nonce = [0; 32];
-
-        let mut i = 0;
-        for byte in bytes[120..152].to_vec(){
-            nonce[i] = byte;
-            i += 1;
-        }
-
-        // --
-
         let mut signature = [0; 64];
 
         let mut i = 0;
-        for byte in bytes[152..216].to_vec(){
+        for byte in bytes[120..184].to_vec(){
             signature[i] = byte;
             i += 1;
         }
@@ -233,7 +220,6 @@ impl BlockHeader{
             index: index,
             timestamp: timestamp,
             content_hash: content_hash,
-            nonce: nonce,
             signature: signature
         }
 
@@ -264,33 +250,16 @@ impl BlockHeader{
          &self.prev_block_hash[..],
          &index_u8le[..],
          &timestamp_u8le[..],
-         &self.content_hash[..],
-         &self.nonce[..]].concat()
+         &self.content_hash[..]].concat()
 
-    }
-
-    /// Sets a nonce to the block header
-    /// * `nonce`: 32 bytes of u8 integers
-
-    pub fn set_nonce(&mut self, nonce: [u8; 32]){
-        self.nonce = nonce;
-    }
-
-    /// Randomizes this BlockHeader's nonce
-
-    pub fn randomize_nonce(& mut self){
-        let mut rand_gen = OsRng::new().expect("Failed to fetch random number generator");
-        rand_gen.fill_bytes(& mut self.nonce);
     }
 
     /// Verifies the internal structure of the header
     /// This includes:
     /// * Verification of issuer signature
-    /// * Verification of proof of work
 
     pub fn verify_internal(&self) -> Result<(), VerificationError>{
         self.verify_signature()?;
-        self.verify_pow()?;
         Ok(())
     }
 
@@ -303,22 +272,6 @@ impl BlockHeader{
 
         if !issuer_verified{
             let err = VerificationError::new(InvalidIssuerSignature);
-            return Err(err)
-        }
-        Ok(())
-
-    }
-
-    /// Verifies the proof of work
-
-    pub fn verify_pow(&self) -> Result<(), VerificationError>{
-
-        let blockhash = self.to_sha3_hash();
-
-        // currently constant difficulty
-
-        if !(blockhash[0] == 0 && blockhash[1] == 0){
-            let err = VerificationError::new(InvalidProofOfWork);
             return Err(err)
         }
         Ok(())
@@ -384,37 +337,6 @@ fn test_blockheader_signature_validity(){
 
 
 #[test]
-fn test_blockheader_pow_validity(){
-
-    let public_key = [0xF6, 0x78, 0x27, 0x40, 0xFE, 0xAC, 0xCB, 0x89,
-                      0x2E, 0x7E, 0x17, 0xEC, 0x3E, 0x4F, 0x3C, 0xF4,
-                      0x49, 0x90, 0x58, 0x66, 0x15, 0xC5, 0x3C, 0x54,
-                      0xC7, 0x8C, 0x5A, 0x43, 0x7B, 0x54, 0x5F, 0x3D];
-
-    // create block header
-
-    let mut block = BlockHeader::new(public_key, None, 0, 0, [4; 32]);
-
-    // check correct nonce (produces a hash with 16 leading zeroes)
-
-    let nonce = [0x43, 0x2A, 0x50, 0x50, 0x22, 0x8A, 0xDE, 0xC3,
-                 0x0C, 0x36, 0xC0, 0x69, 0x79, 0x03, 0x0A, 0x14,
-                 0x6E, 0x76, 0xF5, 0x71, 0x73, 0xF5, 0xFE, 0x88,
-                 0x9A, 0xCA, 0x5E, 0x5B, 0x04, 0x10, 0xA8, 0x6F];
-
-    block.set_nonce(nonce);
-
-    assert!(block.verify_pow().is_ok(), "Valid proof-of-work was not accepted");
-
-    // check incorrect nonce
-
-    block.set_nonce([0; 32]);
-
-    assert!(block.verify_pow().is_err(), "Invalid proof-of-work was accepted");
-
-}
-
-#[test]
 fn test_to_bytes_from_bytes(){
 
     // use a unique pattern to miniminize the risk for parsing errors
@@ -444,12 +366,6 @@ fn test_to_bytes_from_bytes(){
              0x68, 0x69, 0x6a, 0x6b, 0x6c, 0x6d, 0x6e, 0x6f,
              0x70, 0x71, 0x72, 0x73, 0x74, 0x75, 0x76, 0x77],
 
-        nonce:
-            [0x78, 0x79, 0x7a, 0x7b, 0x7c, 0x7d, 0x7e, 0x7f,
-             0x80, 0x81, 0x82, 0x83, 0x84, 0x85, 0x86, 0x87,
-             0x88, 0x89, 0x8a, 0x8b, 0x8c, 0x8d, 0x8e, 0x8f,
-             0x90, 0x91, 0x92, 0x93, 0x94, 0x95, 0x96, 0x97],
-
         signature:
             [0x98, 0x99, 0x9a, 0x9b, 0x9c, 0x9d, 0x9e, 0x9f,
              0xa0, 0xa1, 0xa2, 0xa3, 0xa4, 0xa5, 0xa6, 0xa7,
@@ -471,7 +387,6 @@ fn test_to_bytes_from_bytes(){
     assert!(block_header.index == rebuild.index);
     assert!(block_header.timestamp == rebuild.timestamp);
     assert!(block_header.content_hash == rebuild.content_hash);
-    assert!(block_header.nonce == rebuild.nonce);
 
     // array PartialEq seems to be only implemented for array with len <= 32
 

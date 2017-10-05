@@ -184,7 +184,6 @@ impl Block{
     /// Verifies the internal consistency of the block.
     /// This includes:
     /// * Verification of issuer signature
-    /// * Verification of proof of work
     /// * Verification of merkle hash tree
 
     fn verify_internal(&self) -> Result<(), VerificationError> {
@@ -208,13 +207,6 @@ impl Block{
         self.header.verify_chain_link(&prev_block.header)?;
         Ok(())
 
-    }
-
-    /// Sets a nonce to the block header
-    /// * `nonce`: 32 bytes of u8 integers
-
-    pub fn set_nonce(&mut self, nonce: [u8; 32]){
-        self.header.set_nonce(nonce);
     }
 
     /// Signs the Block
@@ -254,21 +246,15 @@ fn test_verify_internal(){
 
     let mut block = Block::new(public_key, None, 0, vec![Transaction::Dummy]);
 
-    let nonce = [0x2C, 0x0E, 0x2F, 0x75, 0xD0, 0x7C, 0xB7, 0x80,
-                 0x3A, 0x4A, 0xC2, 0xB8, 0xF5, 0xB6, 0x10, 0x21,
-                 0x01, 0x7E, 0x0B, 0xF1, 0xAF, 0x9A, 0xCA, 0xA5,
-                 0xBD, 0x1E, 0xC7, 0xB7, 0xAF, 0x37, 0xC3, 0x30];
-
-    block.set_nonce(nonce);
     block.sign(&secret_key);
 
     assert!(block.verify_internal().is_ok(), "Block was not classified as valid even though signature,
-                                              proof of work and content hash are correct");
+                                              content hash are correct");
 
     // Second subtest
     // --------------
-    // create a block with a correct proof of work and
-    // signature, but without a correct content_hash
+    // create a block with a correct signature,
+    // but without a correct content_hash
 
     let wrong_content_hash = [4; 32];
     let mut block_header = BlockHeader::new(public_key, None, 0, 0, wrong_content_hash);
@@ -276,18 +262,11 @@ fn test_verify_internal(){
     let body = BlockBody{transactions: vec![Transaction::Dummy]};
     let mut block = Block{header: block_header, body: body};
 
-    let nonce = [0xFB, 0x7F, 0xB9, 0x56, 0x69, 0x8F, 0x21, 0x41,
-                 0x6B, 0xAE, 0x23, 0x76, 0x8A, 0x3D, 0x37, 0xC5,
-                 0xD1, 0x32, 0x09, 0xA0, 0xF7, 0x94, 0x6C, 0x90,
-                 0x37, 0x24, 0x95, 0x82, 0xB0, 0x9A, 0xED, 0x73];
-
-    block.set_nonce(nonce);
     block.sign(&secret_key);
 
-    // make sure that our assumptions about
-    // proof of work and signature hold true
+    // make sure that our assumption about
+    // the signature holds true
 
-    assert!(block.header.verify_pow().is_ok());
     assert!(block.header.verify_signature().is_ok());
     assert!(block.header.verify_internal().is_ok());
 
