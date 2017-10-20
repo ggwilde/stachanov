@@ -21,6 +21,7 @@
 use blockchain::block::Block;
 use blockchain::block::BlockId;
 use blockchain::block::BlockError;
+use blockchain::errors::BinFormatError;
 use blockchain::header::BlockHeader;
 use blockchain::transactions::TxId;
 use blockchain::transactions::TxState;
@@ -127,3 +128,13 @@ pub trait ChainStorage: BlockStorage {
 
 }
 
+/// `BinFormat` defines an interface for serializing
+/// and deserializing objects to/from a raw byte format
+
+pub trait BinFormat<T>{
+
+    fn as_bytes(&self) -> Vec<u8>;
+
+    fn from_bytes(bytes: Vec<u8>) -> Result<T, BinFormatError>;
+
+}

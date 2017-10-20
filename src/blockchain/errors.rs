@@ -65,3 +65,54 @@ impl fmt::Display for VerificationError{
         write!(f, "Block rejected. Reason: {}", self.reason)
     }
 }
+
+/// `BinFormatErrorReason` is an enum used to denote
+/// the type of `BinFormatError`
+
+#[derive(Debug)]
+pub enum BinFormatErrorReason{
+    InvalidDataSize,
+    UnsupportedVersion,
+    InvalidFieldData(String)
+}
+
+impl fmt::Display for BinFormatErrorReason {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            BinFormatErrorReason::InvalidDataSize =>
+                write!(f, "Supplied data has an invalid size"),
+            BinFormatErrorReason::UnsupportedVersion =>
+                write!(f, "Supplied data has an invalid version."),
+            BinFormatErrorReason::InvalidFieldData(ref field_name) =>
+                write!(f, "Field {} contains invalid data", field_name),
+        }
+    }
+}
+
+/// `BinFormatError`s happen when faulty binary data
+/// is deserialized. This typically happens, when
+/// invalid data is retrieved over the network
+
+#[derive(Debug)]
+pub struct BinFormatError{
+    reason: BinFormatErrorReason
+}
+
+impl BinFormatError{
+    pub fn new(reason: BinFormatErrorReason) -> BinFormatError{
+        BinFormatError{reason: reason}
+    }
+}
+
+impl Error for BinFormatError{
+    fn description(&self) -> &str{
+        "Faulty binary data"
+    }
+}
+
+impl fmt::Display for BinFormatError{
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Could not create object from binary data: \
+                   Reason: {}", self.reason)
+    }
+}

@@ -28,6 +28,9 @@ use blockchain::utils::u64_to_u8le;
 use blockchain::utils::u8le_to_u64;
 use blockchain::utils::sha3_256;
 use blockchain::traits::Hashable;
+use blockchain::traits::BinFormat;
+use blockchain::errors::BinFormatError;
+use blockchain::errors::BinFormatErrorReason;
 use blockchain::errors::VerificationError;
 use blockchain::errors::VerificationErrorReason::InvalidIssuerSignature;
 use blockchain::errors::VerificationErrorReason::InvalidChainLink;
@@ -132,109 +135,6 @@ impl BlockHeader{
         Some(BlockId(self.prev_block_hash))
     }
 
-    /// Creates a new BlockHeader from a byte vector.
-    ///
-    /// * `bytes`: A byte vector
-
-    pub fn from_bytes(bytes: Vec<u8>) -> BlockHeader{
-
-
-        let mut version_u8le = [0; 8];
-
-        let mut i = 0;
-        for byte in bytes[0..8].to_vec(){
-            version_u8le[i] = byte;
-            i += 1;
-        }
-
-        let version = u8le_to_u64(version_u8le);
-
-        // --
-
-        let mut issuer_pubkey = [0; 32];
-
-        let mut i = 0;
-        for byte in bytes[8..40].to_vec(){
-            issuer_pubkey[i] = byte;
-            i += 1;
-        }
-
-        // --
-
-        let mut prev_block_hash = [0; 32];
-
-        let mut i = 0;
-        for byte in bytes[40..72].to_vec(){
-            prev_block_hash[i] = byte;
-            i += 1;
-        }
-
-        // --
-
-        let mut index_u8le = [0; 8];
-
-        let mut i = 0;
-        for byte in bytes[72..80].to_vec(){
-            index_u8le[i] = byte;
-            i += 1;
-        }
-
-        let index = u8le_to_u64(index_u8le);
-
-        // --
-
-        let mut timestamp_u8le = [0; 8];
-
-        let mut i = 0;
-        for byte in bytes[80..88].to_vec(){
-            timestamp_u8le[i] = byte;
-            i += 1;
-        }
-
-        let timestamp = u8le_to_u64(timestamp_u8le);
-
-        // --
-
-        let mut content_hash = [0; 32];
-
-        let mut i = 0;
-        for byte in bytes[88..120].to_vec(){
-            content_hash[i] = byte;
-            i += 1;
-        }
-
-        // --
-
-        let mut signature = [0; 64];
-
-        let mut i = 0;
-        for byte in bytes[120..184].to_vec(){
-            signature[i] = byte;
-            i += 1;
-        }
-
-        BlockHeader {
-            version: version,
-            issuer_pubkey: issuer_pubkey,
-            prev_block_hash: prev_block_hash,
-            index: index,
-            timestamp: timestamp,
-            content_hash: content_hash,
-            signature: signature
-        }
-
-    }
-
-    /// Returns the complete BlockHeader (including signature)
-    /// as an u8 vector
-
-    pub fn as_bytes(&self) -> Vec<u8>{
-
-        let bin_message = self.message_as_bytes();
-        [&bin_message[..], &self.signature[..]].concat()
-
-    }
-
     /// Returns the message segment of the BlockHeader
     /// as u8 vector. The message segment is all data
     /// without the trailing signature
@@ -309,6 +209,154 @@ impl BlockHeader{
 
 }
 
+impl BinFormat<BlockHeader> for BlockHeader{
+
+    // This section implements (de)serialization methods for
+    // BlockHeader. The current (version 0x0) byte format is:
+
+    //    field            length
+    //  .------------------------.
+    //  | version         | 8    |
+    //  |------------------------|
+    //  | issuer_pubkey   | 32   |
+    //  |------------------------|
+    //  | prev_block_hash | 32   |
+    //  |------------------------|
+    //  | index           | 8    |
+    //  |------------------------|
+    //  | timestamp       | 8    |
+    //  |------------------------|
+    //  | content_hash    | 32   |
+    //  '------------------------'
+
+    /// Returns the complete BlockHeader (including signature)
+    /// as an u8 vector
+
+    fn as_bytes(&self) -> Vec<u8>{
+
+        let bin_message = self.message_as_bytes();
+        [&bin_message[..], &self.signature[..]].concat()
+
+    }
+
+    /// Creates a new BlockHeader from a byte vector.
+    ///
+    /// * `bytes`: A byte vector
+
+    fn from_bytes(bytes: Vec<u8>)
+                    -> Result<BlockHeader, BinFormatError>{
+
+
+        // -------------------------------------------------------
+
+        if bytes.len() < 8{
+            let reason = BinFormatErrorReason::InvalidDataSize;
+            let err = BinFormatError::new(reason);
+            return Err(err);
+        }
+
+        let mut version_u8le = [0; 8];
+
+        let mut i = 0;
+        for byte in bytes[0..8].to_vec(){
+            version_u8le[i] = byte;
+            i += 1;
+        }
+
+        let version = u8le_to_u64(version_u8le);
+
+        if version != 0x0{
+            let reason = BinFormatErrorReason::UnsupportedVersion;
+            let err = BinFormatError::new(reason);
+            return Err(err);
+        }
+
+        // -------------------------------------------------------
+
+        if bytes.len() < 184{
+            let reason = BinFormatErrorReason::InvalidDataSize;
+            let err = BinFormatError::new(reason);
+            return Err(err);
+        }
+
+        let mut issuer_pubkey = [0; 32];
+
+        let mut i = 0;
+        for byte in bytes[8..40].to_vec(){
+            issuer_pubkey[i] = byte;
+            i += 1;
+        }
+
+        // --
+
+        let mut prev_block_hash = [0; 32];
+
+        let mut i = 0;
+        for byte in bytes[40..72].to_vec(){
+            prev_block_hash[i] = byte;
+            i += 1;
+        }
+
+        // --
+
+        let mut index_u8le = [0; 8];
+
+        let mut i = 0;
+        for byte in bytes[72..80].to_vec(){
+            index_u8le[i] = byte;
+            i += 1;
+        }
+
+        let index = u8le_to_u64(index_u8le);
+
+        // --
+
+        let mut timestamp_u8le = [0; 8];
+
+        let mut i = 0;
+        for byte in bytes[80..88].to_vec(){
+            timestamp_u8le[i] = byte;
+            i += 1;
+        }
+
+        let timestamp = u8le_to_u64(timestamp_u8le);
+
+        // --
+
+        let mut content_hash = [0; 32];
+
+        let mut i = 0;
+        for byte in bytes[88..120].to_vec(){
+            content_hash[i] = byte;
+            i += 1;
+        }
+
+        // --
+
+        let mut signature = [0; 64];
+
+        let mut i = 0;
+        for byte in bytes[120..184].to_vec(){
+            signature[i] = byte;
+            i += 1;
+        }
+
+        let header = BlockHeader {
+            version: version,
+            issuer_pubkey: issuer_pubkey,
+            prev_block_hash: prev_block_hash,
+            index: index,
+            timestamp: timestamp,
+            content_hash: content_hash,
+            signature: signature
+        };
+
+        Ok(header)
+
+    }
+
+}
+
 
 #[test]
 fn test_blockheader_signature_validity(){
@@ -339,11 +387,12 @@ fn test_blockheader_signature_validity(){
 #[test]
 fn test_to_bytes_from_bytes(){
 
-    // use a unique pattern to miniminize the risk for parsing errors
 
     let block_header = BlockHeader {
 
-        version: u8le_to_u64([0x40, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47]),
+        version: u8le_to_u64([0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]),
+
+        // use a unique pattern to miniminize the risk for parsing errors
 
         issuer_pubkey:
             [0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
@@ -381,19 +430,26 @@ fn test_to_bytes_from_bytes(){
     let as_bytes = block_header.as_bytes();
     let rebuild = BlockHeader::from_bytes(as_bytes);
 
-    assert!(block_header.issuer_pubkey == rebuild.issuer_pubkey);
-    assert!(block_header.prev_block_hash == rebuild.prev_block_hash);
-    assert!(block_header.version == rebuild.version);
-    assert!(block_header.index == rebuild.index);
-    assert!(block_header.timestamp == rebuild.timestamp);
-    assert!(block_header.content_hash == rebuild.content_hash);
+    if let Ok(rebuild) = rebuild{
 
-    // array PartialEq seems to be only implemented for array with len <= 32
+        assert!(block_header.issuer_pubkey == rebuild.issuer_pubkey);
+        assert!(block_header.prev_block_hash == rebuild.prev_block_hash);
+        assert!(block_header.version == rebuild.version);
+        assert!(block_header.index == rebuild.index);
+        assert!(block_header.timestamp == rebuild.timestamp);
+        assert!(block_header.content_hash == rebuild.content_hash);
 
-    let mut i = 0;
-    while i < 64{
-        assert!(block_header.signature[i] == rebuild.signature[i]);
-        i = i + 1;
+        // array PartialEq seems to be only implemented for array with len <= 32
+
+        let mut i = 0;
+        while i < 64{
+            assert!(block_header.signature[i] == rebuild.signature[i]);
+            i = i + 1;
+        }
+
+    }else{
+        assert!(false, "Valid binary representation of BlockHeader \
+                        could not be deserialized into an object");
     }
 
 
