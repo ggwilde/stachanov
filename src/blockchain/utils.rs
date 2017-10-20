@@ -22,6 +22,29 @@ extern crate crypto;
 use self::crypto::sha3::Sha3;
 use self::crypto::digest::Digest;
 
+pub fn u16_to_u8le(input: u16) -> [u8; 2]{
+
+    let mut output = [0;2];
+    for i in 0..2{
+        output[i] = (input >> i*8) as u8
+    }
+    output
+
+}
+
+pub fn u8le_to_u16(input: [u8; 2]) -> u16{
+
+    let mut output: u16 = 0;
+    let mut i = 0;
+
+    while i < 2{
+        output += (input[i] as u16) << (8*i);
+        i += 1;
+    }
+    output
+
+}
+
 pub fn u64_to_u8le(input: u64) -> [u8; 8]{
 
     let mut output = [0;8];
