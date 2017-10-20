@@ -24,6 +24,8 @@ use self::crypto::ed25519;
 use self::rand::Rng;
 use self::rand::OsRng;
 use blockchain::block::BlockId;
+use blockchain::utils::u16_to_u8le;
+use blockchain::utils::u8le_to_u16;
 use blockchain::utils::u64_to_u8le;
 use blockchain::utils::u8le_to_u64;
 use blockchain::utils::sha3_256;
@@ -37,7 +39,7 @@ use blockchain::errors::VerificationErrorReason::InvalidChainLink;
 
 #[derive(Copy)]
 pub struct BlockHeader{
-    version: u64,
+    version: u16,
     issuer_pubkey: [u8; 32],
     prev_block_hash: [u8; 32],
     index: u64,
@@ -84,7 +86,7 @@ impl BlockHeader{
     pub fn new(issuer_pubkey: [u8; 32],
                previous_header: Option<&BlockHeader>,
                timestamp: u64,
-               version: u64,
+               version: u16,
                content_hash: [u8; 32]) -> BlockHeader {
 
         let mut index = 0;
@@ -141,7 +143,7 @@ impl BlockHeader{
 
     fn message_as_bytes(&self) -> Vec<u8>{
 
-        let version_u8le = u64_to_u8le(self.version);
+        let version_u8le = u16_to_u8le(self.version);
         let index_u8le = u64_to_u8le(self.index);
         let timestamp_u8le = u64_to_u8le(self.timestamp);
 
@@ -249,21 +251,21 @@ impl BinFormat<BlockHeader> for BlockHeader{
 
         // -------------------------------------------------------
 
-        if bytes.len() < 8{
+        if bytes.len() < 2{
             let reason = BinFormatErrorReason::InvalidDataSize;
             let err = BinFormatError::new(reason);
             return Err(err);
         }
 
-        let mut version_u8le = [0; 8];
+        let mut version_u8le = [0; 2];
 
         let mut i = 0;
-        for byte in bytes[0..8].to_vec(){
+        for byte in bytes[0..2].to_vec(){
             version_u8le[i] = byte;
             i += 1;
         }
 
-        let version = u8le_to_u64(version_u8le);
+        let version = u8le_to_u16(version_u8le);
 
         if version != 0x0{
             let reason = BinFormatErrorReason::UnsupportedVersion;
@@ -273,7 +275,7 @@ impl BinFormat<BlockHeader> for BlockHeader{
 
         // -------------------------------------------------------
 
-        if bytes.len() < 184{
+        if bytes.len() != 178{
             let reason = BinFormatErrorReason::InvalidDataSize;
             let err = BinFormatError::new(reason);
             return Err(err);
@@ -282,7 +284,7 @@ impl BinFormat<BlockHeader> for BlockHeader{
         let mut issuer_pubkey = [0; 32];
 
         let mut i = 0;
-        for byte in bytes[8..40].to_vec(){
+        for byte in bytes[2..34].to_vec(){
             issuer_pubkey[i] = byte;
             i += 1;
         }
@@ -292,7 +294,7 @@ impl BinFormat<BlockHeader> for BlockHeader{
         let mut prev_block_hash = [0; 32];
 
         let mut i = 0;
-        for byte in bytes[40..72].to_vec(){
+        for byte in bytes[34..66].to_vec(){
             prev_block_hash[i] = byte;
             i += 1;
         }
@@ -302,7 +304,7 @@ impl BinFormat<BlockHeader> for BlockHeader{
         let mut index_u8le = [0; 8];
 
         let mut i = 0;
-        for byte in bytes[72..80].to_vec(){
+        for byte in bytes[66..74].to_vec(){
             index_u8le[i] = byte;
             i += 1;
         }
@@ -314,7 +316,7 @@ impl BinFormat<BlockHeader> for BlockHeader{
         let mut timestamp_u8le = [0; 8];
 
         let mut i = 0;
-        for byte in bytes[80..88].to_vec(){
+        for byte in bytes[74..82].to_vec(){
             timestamp_u8le[i] = byte;
             i += 1;
         }
@@ -326,7 +328,7 @@ impl BinFormat<BlockHeader> for BlockHeader{
         let mut content_hash = [0; 32];
 
         let mut i = 0;
-        for byte in bytes[88..120].to_vec(){
+        for byte in bytes[82..114].to_vec(){
             content_hash[i] = byte;
             i += 1;
         }
@@ -336,7 +338,7 @@ impl BinFormat<BlockHeader> for BlockHeader{
         let mut signature = [0; 64];
 
         let mut i = 0;
-        for byte in bytes[120..184].to_vec(){
+        for byte in bytes[114..178].to_vec(){
             signature[i] = byte;
             i += 1;
         }
@@ -390,7 +392,7 @@ fn test_to_bytes_from_bytes(){
 
     let block_header = BlockHeader {
 
-        version: u8le_to_u64([0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]),
+        version: 0x00,
 
         // use a unique pattern to miniminize the risk for parsing errors
 
